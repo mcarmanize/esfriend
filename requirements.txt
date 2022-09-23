@@ -1,0 +1,9 @@
+certifi==2022.6.15.2
+cffi==1.15.1
+distlib==0.3.6
+filelock==3.8.0
+platformdirs==2.5.2
+pycparser==2.21
+pymongo==4.2.0
+six==1.16.0
+ssdeep==3.4
