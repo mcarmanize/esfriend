@@ -188,9 +188,10 @@ def get_event_string(event):
 
 def format_event(message):
     """
-    psutil modules requires sudo, so we use subprocess to call ps
+        psutil modules requires sudo, so we use subprocess to call ps
     """
-    if "process" in message.keys():
+    message_keys = message.keys()
+    if "process" in message_keys:
         commands = {}
         message_process_keys = message["process"].keys()
         if "command" not in message_process_keys:
@@ -226,33 +227,11 @@ def format_event(message):
         message["process"] = {**message["process"], **commands}
         message = {**message, **message["process"]}
         message["process"] = None
-    elif "file" in message.keys():
-        message = {**message, **message["file"]}
-        message["file"] = None
-    elif "misc" in message.keys():
-        message = {**message, **message["misc"]}
-        message["misc"] = None
-    elif "xattr" in message.keys():
-        message = {**message, **message["xattr"]}
-        message["xattr"] = None
-    elif "mprotect" in message.keys():
-        message = {**message, **message["mprotect"]}
-        message["mprotect"] = None
-    elif "uipcConnect" in message.keys():
-        message = {**message, **message["uipcConnect"]}
-        message["uipcConnect"] = None
-    elif "signal" in message.keys():
-        message = {**message, **message["signal"]}
-        message["signal"] = None
-    elif "ioKit" in message.keys():
-        message = {**message, **message["ioKit"]}
-        message["ioKit"] = None
-    elif "mount" in message.keys():
-        message = {**message, **message["mount"]}
-        message["mount"] = None
-    elif "acl" in message.keys():
-        message = {**message, **message["acl"]}
-        message["acl"] = None
+    else:
+        for key in message_keys:
+            if isinstance(message[key], dict):
+                message = {**message, **message[key]}
+                message[key] = None
     return message
 
 
