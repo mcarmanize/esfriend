@@ -144,7 +144,7 @@ Example:
 
 `./submit.py ~/SamplePath.o 60 cve-2022-0000`
 
-You must include a timeout and tag, there are no default values.
+You must include a timeout (in seconds) and tags (delimited however you like), there are no default values.
 
 ### ESFriend Web
 Results can be viewed using the ESFriend web.py script
