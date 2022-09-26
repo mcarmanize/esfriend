@@ -82,11 +82,14 @@ class ESFWrapper:
         # format additional fields for process events
         # flatten unique dictionary into main event dict
         event = format_event(event)
-
+        event_keys = event.keys()
         # exclude proc_path values that should not exhibit malicious behavior
-        if "proc_path" in event.keys():
+        if "proc_path" in event_keys:
             if event["proc_path"] in EXCLUDED_PROC_PATHS:
                 self.ignored_proc_paths += 1
+                return
+        if "ppid_command" in event_keys:
+            if "esfpg.py" in event["ppid_command"]:
                 return
         event_string = get_event_string(event)
         event_md5 = hashlib.md5(event_string.encode("utf-8")).hexdigest()
