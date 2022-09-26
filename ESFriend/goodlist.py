@@ -22,7 +22,6 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
-import sys
 import os
 from pymongo import MongoClient
 from bson.objectid import ObjectId
@@ -43,6 +42,7 @@ class GoodList:
     def __init__(self, selection=None):
         self.db = DatabaseConnection("mongodb://127.0.0.1:27017")
         self.goodlist = self.db.client.esfriend["goodlist"]
+        self.goodlist.create_index("event_md5")
         self.select_run_log()
 
     def select_run_log(self):
