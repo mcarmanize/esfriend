@@ -46,7 +46,10 @@ def submit_file(file_path, timeout, tag=None):
 
 
 if __name__ == "__main__":
-    file_to_submit = sys.argv[1]
-    timeout = int(sys.argv[2])
-    tag = sys.argv[3]
-    submit_file(file_to_submit, timeout, tag)
+    try:
+        file_to_submit = sys.argv[1]
+        timeout = int(sys.argv[2])
+        tag = sys.argv[3]
+        submit_file(file_to_submit, timeout, tag)
+    except:
+        print("Usage: ./submit.py file_path timeout tags\n\nAll values required.")
