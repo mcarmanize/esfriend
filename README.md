@@ -1,5 +1,5 @@
 # ESFriend
-## A minimal malware analysis sandbox framework for macOS
+## A minimal malware analysis sandbox for macOS
 
 Introducing ESFriend. A coordinated set of python wrappers for powerful applications on macOS, coming together to form a malware analysis sandbox. These application wrappers cooperate with each other using MongoDB to pass control to the next step.
 
