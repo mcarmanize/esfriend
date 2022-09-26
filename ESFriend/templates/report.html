@@ -22,9 +22,12 @@ mitmdump url:<br>
 <a href="{{ mitmdump_url }}">{{ mitmdump_url }}</a><br><br>
 execution output:<br>
 {{ execution_output }}<br><br>
+All processes:<br>
+<a href='{{ all_procs_url }}'>{{ all_procs_url }}</a><br><br>
+{{ parent_table }}<br><br>
 request headers:<br>
 {{ request_headers|safe }}<br>
-{{ parent_table }}<br><br>
-{{ distinct_table }}<br>
+
+
 
 {% endblock %}
