@@ -63,6 +63,21 @@ class ParentData(object):
         self.job_id = job_id
 
 
+class PidTable(Table):
+    pid = LinkCol(
+        "PID", "proc", url_kwargs=dict(job_id="job_id", pid="pid"), attr="pid"
+    )
+    proc_path = Col("Process")
+    job_id = Col("Job ID", show=False)
+
+
+class PidData(object):
+    def __init__(self, pid, proc_path, job_id):
+        self.pid = pid
+        self.proc_path = proc_path
+        self.job_id = job_id
+
+
 class EventTable(Table):
     pid_event = Col("PID Events")
 
@@ -148,6 +163,7 @@ def job(job_id):
         parent_list = get_parent_list(proc_list, job_id)
         parent_table = ParentTable(parent_list)
         distinct_table = DistinctTable(get_distinct_list(job_id))
+        all_procs_url = f"http://localhost:5000/all_procs/{job_id}"
         return render_template(
             "report.html",
             title=file_name,
@@ -156,6 +172,7 @@ def job(job_id):
             request_headers=req_headers,
             parent_table=parent_table,
             distinct_table=distinct_table,
+            all_procs_url=all_procs_url,
         )
     else:
         return "No report available."
@@ -212,3 +229,24 @@ def print_procs(job_id):
             return jsonify(proc_list)
     except Exception as err:
         return f"error: {err}"
+
+
+@app.route("/all_procs/<string:job_id>")
+def all_procs(job_id):
+    db = DatabaseConnection()
+    unique_pids = db.run_logs[job_id].distinct("pid")
+    print(len(unique_pids))
+    pid_list = []
+    for pid in unique_pids:
+        proc_path = db.run_logs[job_id].find_one({"pid": pid, "proc_path": {"$exists": True}})
+        if proc_path is not None and "proc_path" in proc_path:
+            pid_list.append(PidData(pid, proc_path["proc_path"], job_id))
+        elif proc_path is None:
+            pid_list.append(PidData(pid, "no process path", job_id))
+    print(len(pid_list))
+    pid_table = PidTable(pid_list)
+    return render_template(
+        "processes.html",
+        title="All processes:",
+        pid_table=pid_table,
+    )
