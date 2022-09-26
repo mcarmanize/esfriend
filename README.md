@@ -142,7 +142,7 @@ To clean only the job, machine, and run databases use:
 
 Example:
 
-`./submit.py ~/SamplePath.o 60 cve-2022-0000`
+`./submit.py ~/SamplePath.o 60 cve-2022-0000,macho`
 
 You must include a timeout (in seconds) and tags (delimited however you like), there are no default values.
 
