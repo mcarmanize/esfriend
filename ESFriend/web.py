@@ -51,14 +51,16 @@ class ParentTable(Table):
         "PID", "proc", url_kwargs=dict(job_id="job_id", pid="pid"), attr="pid"
     )
     command = Col("Command")
+    pcommand = Col("Parent Command")
     rcommand = Col("Responsible Command")
     job_id = Col("Job ID", show=False)
 
 
 class ParentData(object):
-    def __init__(self, pid, command, rcommand, job_id):
+    def __init__(self, pid, command, pcommand, rcommand, job_id):
         self.pid = pid
         self.command = command
+        self.pcommand = pcommand
         self.rcommand = rcommand
         self.job_id = job_id
 
@@ -122,7 +124,7 @@ def get_parent_list(proc_list, job_id):
     for pid in proc_list:
         parent_list.append(
             ParentData(
-                pid, proc_list[pid]["command"], proc_list[pid]["rcommand"], job_id
+                pid, proc_list[pid]["command"], proc_list[pid]["pcommand"], proc_list[pid]["rcommand"], job_id
             )
         )
     return parent_list
