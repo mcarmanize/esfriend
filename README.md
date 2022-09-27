@@ -57,6 +57,12 @@ Installing these to the system because I have not investigated environment varia
 Analysis machine can be any physical macOS machine, Intel or Apple silcon.
 
 
+### Install Rosetta (on Apple Silicon machines):
+You'll need any x86 application to show the prompt to install Rosetta. Even running a simple hello world program will start the process.
+
+Let me know if you need help generating an x86 MachO.
+
+
 ### Install homebrew:
 Again:
 
