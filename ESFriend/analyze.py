@@ -74,6 +74,7 @@ class Analyze:
         # delete the headers file and mitmdump file from disk
         os.remove("request_headers.txt")
         os.remove(self.pcap_path)
+        print(f"Analysis finished for job id: {self.job_id}")
 
 
 if __name__ == "__main__":
