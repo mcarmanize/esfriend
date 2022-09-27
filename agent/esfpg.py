@@ -3,13 +3,6 @@
     Take output from ESF Playground and insert into a unique mongo db
     using a connection string via commandline to designate server
 
-    Modify the path of ESFPlayground if needed
-
-    The new versions of ESFPlayground let you choose which events to output through the UI
-    you may need to modify those settings to get the correct output
-
-    Example usage: sudo python3 esfpg2mongodb.py mongodb://127.0.0.1:27017
-
     esfriend - a minimal malware analysis sandbox framework for macOS
     Copyright (C) <2022> Matt Carman
 
@@ -44,6 +37,8 @@ EXCLUDED_PROC_PATHS = [
     "/usr/libexec/endpointsecurityd",
     "/private/var/run/mDNSResponder",
     "/usr/libexec/logd_helper",
+    "/bin/ps",
+    "/System/Applications/News.app/Contents/PlugIns/NewsToday2.appex/Contents/MacOS/NewsToday2",
     # "/usr/libexec/airportd",
     # "/Applications/iTerm.app/Contents/MacOS/iTerm2",
 ]
@@ -54,7 +49,7 @@ class ESFWrapper:
         self.job_id = job_id
         self.parent_pid = int(parent_pid)
         self.ignored_good_events = 0
-        self.ignored_proc_paths = 0
+        self.ignored_paths = 0
         self.db = DatabaseConnection(MONGO_CONNECTION_STRING, job_id)
         self.db.esfriend_jobs.update_one(
             {"_id": ObjectId(self.job_id)}, {"$set": {"agent_pid": AGENT_PID}}
@@ -86,10 +81,11 @@ class ESFWrapper:
         # exclude proc_path values that should not exhibit malicious behavior
         if "proc_path" in event_keys:
             if event["proc_path"] in EXCLUDED_PROC_PATHS:
-                self.ignored_proc_paths += 1
+                self.ignored_paths += 1
                 return
         if "ppid_command" in event_keys:
             if "esfpg.py" in event["ppid_command"]:
+                self.ignored_paths += 1
                 return
         event_string = get_event_string(event)
         event_md5 = hashlib.md5(event_string.encode("utf-8")).hexdigest()
@@ -109,7 +105,7 @@ class ESFWrapper:
                 {
                     "$set": {
                         "ignored_good_events": self.ignored_good_events,
-                        "ignored_proc_paths": self.ignored_proc_paths,
+                        "ignored_paths": self.ignored_paths,
                     }
                 },
             )
