@@ -71,10 +71,11 @@ class RunLogAnalyzer:
         self.selected_collection = collection_name_list[selection]
         self.print_process_tree()
 
-    def add_process(self, pid, command, rcommand=""):
+    def add_process(self, pid, command, pcommand="", rcommand=""):
         if pid not in self.process_tree.keys():
             self.process_tree[pid] = {}
             self.process_tree[pid]["command"] = command
+            self.process_tree[pid]["pcommand"] = pcommand
             self.process_tree[pid]["rcommand"] = rcommand
             self.process_tree[pid]["children"] = list()
 
@@ -120,19 +121,18 @@ class RunLogAnalyzer:
         )
         for item in cursor:
             # Original ppid and ppid look to be the same in most cases.
-            if "responsible_pid_command" in item.keys():
+            item_keys = item.keys()
+            if "responsible_pid_command" in item_keys and "ppid_command" in item_keys:
+                self.add_process(item["pid"], item["command"], item["ppid_command"], item["responsible_pid_command"])
+                # self.process_tree[item["ppid"]]["children"].append(item["pid"])
+            elif "responsible_pid_command" in item_keys:
                 self.add_process(
-                    item["pid"], item["command"], item["responsible_pid_command"]
+                    item["pid"], item["command"], rcommand=item["responsible_pid_command"]
                 )
-            else:
-                self.add_process(item["pid"], item["command"])
-            if "ppid_command" in item.keys():
-                self.add_process(item["ppid"], item["ppid_command"])
+            elif "ppid_command" in item_keys:
+                self.add_process(item["ppid"], item["command"], pcommand=item["ppid_command"])
                 self.process_tree[item["ppid"]]["children"].append(item["pid"])
-            if (
-                "ppid_command" not in item.keys()
-                and "responsible_pid_command" not in item.keys()
-            ):
+            else:
                 self.add_process(item["pid"], item["command"])
 
 
