@@ -101,7 +101,9 @@ class ESFriendAgent:
             f.close()
         db.client.close()
         esf_command = ["./esfpg.py", str(self.job_id), str(AGENT_PID)]
+        log_command = ["./log.py", str(self.job_id)]
         self.esf_process = subprocess.Popen(esf_command)
+        self.log_process = subprocess.Popen(log_command)
         # this sleep allows the system running ESFriend to start mitmdump in time
         time.sleep(5)
         self.start_time = int(time.time())
@@ -171,6 +173,7 @@ class ESFriendAgent:
             now = int(time.time())
             if (now - self.start_time) > self.timeout:
                 self.esf_process.send_signal(signal.SIGINT)
+                self.log_process.send_signal(signal.SIGINT)
                 db = DatabaseConnection(MONGO_CONNECTION_STRING)
                 unassign_job = db.esfriend_machines.update_one(
                     {"machine_name": MACHINE_NAME}, {"$set": {"assigned_job": None}}
