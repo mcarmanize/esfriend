@@ -116,6 +116,7 @@ Configure crontab to run the agent.py script on reboot
 `sudo nano /etc/sudoers`
 
 Add the following line to the bottom of the file, replacing `username` with your own user account
+
 `username ALL=NOPASSWD:/sbin/reboot`
 
 
