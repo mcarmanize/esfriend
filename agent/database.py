@@ -31,7 +31,9 @@ class DatabaseConnection:
         self.esfriend_machines = self.esfriend["machines"]
         if job_id is not None:
             self.run_logs = self.client.run_logs
+            syslog_collection = job_id+"syslog"
             self.job = self.run_logs[job_id]
+            self.syslog = self.run_logs[syslog_collection]
             self.job.create_index("event")
             self.job.create_index("pid")
 
