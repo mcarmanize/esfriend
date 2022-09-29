@@ -19,7 +19,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
-from re import sub
+
 import sys
 import os
 import subprocess
@@ -31,7 +31,7 @@ from utility import format_event, get_event_string
 from agent_config import MONGO_CONNECTION_STRING, ESFPG
 
 
-AGENT_PID = os.getpid()
+ESFPG_PID = os.getpid()
 
 EXCLUDED_PROC_PATHS = [
     "/usr/libexec/endpointsecurityd",
@@ -52,7 +52,7 @@ class ESFWrapper:
         self.ignored_paths = 0
         self.db = DatabaseConnection(MONGO_CONNECTION_STRING, job_id)
         self.db.esfriend_jobs.update_one(
-            {"_id": ObjectId(self.job_id)}, {"$set": {"agent_pid": AGENT_PID}}
+            {"_id": ObjectId(self.job_id)}, {"$set": {"esfpg_pid": ESFPG_PID, "agent_pid": self.parent_pid}}
         )
         self.get_goodlist()
         self.run_esf_playground()
