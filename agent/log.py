@@ -22,8 +22,14 @@ class LogStreamWrapper:
         self.run_logstream()
 
     def insert_log_message(self, message):
-        message_json = json.loads(message)
-        self.db.syslog.insert_one(message_json)
+        try:
+            message_json = json.loads(message)
+            # traceID can be an int value that mongodb cannot accept
+            message_json["traceID"] = str(message_json["traceID"])
+            self.db.syslog.insert_one(message_json)
+        except Exception as err:
+            print(err)
+            print(message_json)
 
     def run_logstream(self):
         try:
