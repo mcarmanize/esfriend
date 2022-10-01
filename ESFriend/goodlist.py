@@ -55,18 +55,19 @@ class GoodList:
 
         for collection in self.collections:
             collection_name = collection["name"]
-            job_data = self.db.client.esfriend.jobs.find_one(
-                {"_id": ObjectId(collection_name)}
-            )
-            file_name = job_data["file_name"]
-            timeout = job_data["timeout"]
-            if "tags" in job_data.keys():
-                collection_tags = job_data["tags"]
-            else:
-                collection_tags = None
-            collection_name_list.append(collection_name)
-            print(f"  {collection_index}: {file_name} {timeout} {collection_tags}")
-            collection_index += 1
+            if not str(collection_name).endswith("syslog"):
+                job_data = self.db.client.esfriend.jobs.find_one(
+                    {"_id": ObjectId(collection_name)}
+                )
+                file_name = job_data["file_name"]
+                timeout = job_data["timeout"]
+                if "tags" in job_data.keys():
+                    collection_tags = job_data["tags"]
+                else:
+                    collection_tags = None
+                collection_name_list.append(collection_name)
+                print(f"  {collection_index}: {file_name} {timeout} {collection_tags}")
+                collection_index += 1
         selection = int(input("\n    Enter a number: "))
         self.selected_collection = collection_name_list[selection]
         self.process_run_log()
