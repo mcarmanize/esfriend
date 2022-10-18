@@ -23,6 +23,7 @@ MACHINE_TYPE = "physical"
 
 ESFPG = "/Applications/ESFPlayground.app/Contents/MacOS/esfplayground"
 P7ZIP = "/opt/homebrew/bin/7z"
+ESLOGGER = "/usr/bin/eslogger"
 
 # to configure connection string with password use
 # mongodb://username:password@server:port
