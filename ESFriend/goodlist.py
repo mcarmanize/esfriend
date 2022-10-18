@@ -55,7 +55,7 @@ class GoodList:
 
         for collection in self.collections:
             collection_name = collection["name"]
-            if not str(collection_name).endswith("syslog"):
+            if not str(collection_name).endswith("syslog") and not str(collection_name).endswith("eslog"):
                 job_data = self.db.client.esfriend.jobs.find_one(
                     {"_id": ObjectId(collection_name)}
                 )
