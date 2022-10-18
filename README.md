@@ -9,6 +9,8 @@ Introducing ESFriend. A coordinated set of python wrappers for powerful applicat
 
 **I've added the option to use eslogger output instead of ESF Playground on macOS Ventura (where eslogger is available). I'm still working on parsing the output and gathering additional data. This at least gives me the ability to investigate the more complex output of eslogger in comparison to ESF Playground.**
 
+**Adding web results shortly.**
+
 
 ## Free applications:
 ESF Playground - https://themittenmac.com/the-esf-playground/
