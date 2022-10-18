@@ -4,15 +4,24 @@
 
 Introducing ESFriend. A coordinated set of python wrappers for powerful applications on macOS, coming together to form a malware analysis sandbox. These application wrappers cooperate with each other using MongoDB to pass control to the next step.
 
+<<<<<<< HEAD
 ## Free applications
 =======
 ## October 17 2022 Update:
+=======
+## October 17 2022 update:
+
+**Deep Freeze is no longer necessary if you do not mind restoring the system snapshot via the macOS repair menu.**
+
+**Added the option to use eslogger output on macOS Ventura. I still need to parse each event to see what additional data needed to be collected.**
+>>>>>>> 11d9192 (deep freeze not required (all free!), instructions for eslogger usage)
 
 **I didn't realize the snapshot restoration feature through the macOS repair menu could serve as a free (but slower) replacement for Deep Freeze, so technically this whole sandbox is free (minus hardware cost)!**
 
 **I've added the option to use eslogger output instead of ESF Playground on macOS Ventura (where eslogger is available). I'm still working on parsing the output and gathering additional data. This at least gives me the ability to investigate the more complex output of eslogger in comparison to ESF Playground.**
 
 
+<<<<<<< HEAD
 ESF Playground - <https://themittenmac.com/the-esf-playground/>
 
 mitmproxy - <https://mitmproxy.org/>
@@ -26,6 +35,15 @@ p7zip - <http://p7zip.sourceforge.net/>
 eslogger - Announced in this video https://developer.apple.com/videos/play/wwdc2022/110345/
 
 Faronics Deep Freeze (69.30 USD) - <https://www.faronics.com/products/deep-freeze/mac>
+=======
+## Paid applications (not required):
+
+**Deep Freeze is not required to revert the machine to a clean state. You can use APFS snapshots and revert using the repair menu on reboot. Deep Freeze just expedites this cleanup process. Maybe Apple can implement a constant recover mode that always reverts snapshot.**
+
+`tmutil snapshot`
+
+Faronics Deep Freeze (69.30 USD) - https://www.faronics.com/products/deep-freeze/mac
+>>>>>>> 11d9192 (deep freeze not required (all free!), instructions for eslogger usage)
 
 ESFriend is designed to use a physical macOS machine as the sandbox environment, then perform cleanup by using Faronics Deep Freeze.
 
@@ -95,7 +113,15 @@ THe only module needed on the analysis machine at this time is pymongo.
 
 ### Install ESF Playground
 
+<<<<<<< HEAD
 <https://themittenmac.com/the-esf-playground/>
+=======
+### Install ESF Playground:
+
+**ESF Playground can be replaced by eslogger on macOS Ventura. You must add `--eslogger` argument to `agent.py` command line.**
+
+https://themittenmac.com/the-esf-playground/
+>>>>>>> 11d9192 (deep freeze not required (all free!), instructions for eslogger usage)
 
 Configure the SystemExtension so ESF Playground can be run without root.
 
@@ -123,17 +149,26 @@ Configure crontab to run the agent.py script on reboot
 
 `@reboot cd /path/to/agent/ && ./agent.py`
 
+<<<<<<< HEAD
 ### Configure sudoers file to allow reboot without password
 =======
 or, to configure usage of eslogger:
 
 `@reboot cd /path/to/agent/ && ./agent.py --eslogger`
+=======
+or, to use eslogger for output:
+
+`@reboot cd /path/to/agent/ && ./agent.py --eslogger`
+
+>>>>>>> 11d9192 (deep freeze not required (all free!), instructions for eslogger usage)
 
 `sudo nano /etc/sudoers`
 
 Add the following line to the bottom of the file, replacing `username` with your own user account
 
-`username ALL=NOPASSWD:/sbin/reboot`
+`username ALL=NOPASSWD:/sbin/reboot, /usr/bin/eslogger`
+
+**eslogger path will be required in the future**
 
 ### Install Faronics Deep Freeze for Mac
 
