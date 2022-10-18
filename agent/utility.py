@@ -109,8 +109,9 @@ def get_event_string(event):
                     event["responsible_pid_command"],
                     event["ppid_command"],
                 )
-            elif "command" in event_keys:
-                event_string = "{},{}".format(event["event"], event["command"])
+            # tuning down the filtering for process events that have limited information
+            # elif "command" in event_keys:
+            #     event_string = "{},{}".format(event["event"], event["command"])
         elif "file" in event_keys:
             if "original" in event_keys:
                 event_string = "{},{},{},{}".format(
@@ -364,8 +365,8 @@ class FileChangeMonitor:
             ] = sha256sum(file)
 
     def upload_file(self, file, responsible_pid, responsible_path):
+        db = DatabaseConnection(MONGO_CONNECTION_STRING, self.job_id)
         try:
-            db = DatabaseConnection(MONGO_CONNECTION_STRING, self.job_id)
             file_id = db.insert_file_with_file_path(file)
             db.job.insert_one(
                 {

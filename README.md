@@ -5,6 +5,13 @@
 Introducing ESFriend. A coordinated set of python wrappers for powerful applications on macOS, coming together to form a malware analysis sandbox. These application wrappers cooperate with each other using MongoDB to pass control to the next step.
 
 ## Free applications
+=======
+## October 17 2022 Update:
+
+**I didn't realize the snapshot restoration feature through the macOS repair menu could serve as a free (but slower) replacement for Deep Freeze, so technically this whole sandbox is free (minus hardware cost)!**
+
+**I've added the option to use eslogger output instead of ESF Playground on macOS Ventura (where eslogger is available). I'm still working on parsing the output and gathering additional data. This at least gives me the ability to investigate the more complex output of eslogger in comparison to ESF Playground.**
+
 
 ESF Playground - <https://themittenmac.com/the-esf-playground/>
 
@@ -15,6 +22,8 @@ ssdeep - <https://ssdeep-project.github.io/ssdeep/index.html>
 p7zip - <http://p7zip.sourceforge.net/>
 
 ## Paid applications
+=======
+eslogger - Announced in this video https://developer.apple.com/videos/play/wwdc2022/110345/
 
 Faronics Deep Freeze (69.30 USD) - <https://www.faronics.com/products/deep-freeze/mac>
 
@@ -93,6 +102,10 @@ Configure the SystemExtension so ESF Playground can be run without root.
 User Security & Privacy menu to add `Terminal.app` to Full Disk Access
 
 ### Script configuration
+=======
+**To use eslogger instead of ESF Playground, use the `--eslogger` argument with the `./agent.py` command.**
+
+`./agent.py --eslogger`
 
 `ESFriend/config.py` and `agent/agent_config.py` need to be modified so they contain the correct path for corresponding applications, correct database connection string, and machine configuration.
 
@@ -111,6 +124,10 @@ Configure crontab to run the agent.py script on reboot
 `@reboot cd /path/to/agent/ && ./agent.py`
 
 ### Configure sudoers file to allow reboot without password
+=======
+or, to configure usage of eslogger:
+
+`@reboot cd /path/to/agent/ && ./agent.py --eslogger`
 
 `sudo nano /etc/sudoers`
 
@@ -119,6 +136,12 @@ Add the following line to the bottom of the file, replacing `username` with your
 `username ALL=NOPASSWD:/sbin/reboot`
 
 ### Install Faronics Deep Freeze for Mac
+
+<https://www.faronics.com/products/deep-freeze/mac>
+=======
+### Install Faronics Deep Freeze for Mac:
+
+**Deep Freeze is not required to have a functional sandbox. You can create a snapshot using `tmutil snapshot` then restore the clean state using the macOS Repair menu. Deep Freeze does expedite the cleanup process by a considerable amount of time.**
 
 <https://www.faronics.com/products/deep-freeze/mac>
 
