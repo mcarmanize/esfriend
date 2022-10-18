@@ -1,146 +1,120 @@
 # ESFriend
-
 ## A minimal malware analysis sandbox for macOS
 
 Introducing ESFriend. A coordinated set of python wrappers for powerful applications on macOS, coming together to form a malware analysis sandbox. These application wrappers cooperate with each other using MongoDB to pass control to the next step.
 
-<<<<<<< HEAD
-## Free applications
-=======
 ## October 17 2022 Update:
-=======
-## October 17 2022 update:
-
-**Deep Freeze is no longer necessary if you do not mind restoring the system snapshot via the macOS repair menu.**
-
-**Added the option to use eslogger output on macOS Ventura. I still need to parse each event to see what additional data needed to be collected.**
->>>>>>> 11d9192 (deep freeze not required (all free!), instructions for eslogger usage)
 
 **I didn't realize the snapshot restoration feature through the macOS repair menu could serve as a free (but slower) replacement for Deep Freeze, so technically this whole sandbox is free (minus hardware cost)!**
 
 **I've added the option to use eslogger output instead of ESF Playground on macOS Ventura (where eslogger is available). I'm still working on parsing the output and gathering additional data. This at least gives me the ability to investigate the more complex output of eslogger in comparison to ESF Playground.**
 
 
-<<<<<<< HEAD
-ESF Playground - <https://themittenmac.com/the-esf-playground/>
+## Free applications:
+ESF Playground - https://themittenmac.com/the-esf-playground/
 
-mitmproxy - <https://mitmproxy.org/>
+mitmproxy - https://mitmproxy.org/
 
-ssdeep - <https://ssdeep-project.github.io/ssdeep/index.html>
+ssdeep - https://ssdeep-project.github.io/ssdeep/index.html
 
-p7zip - <http://p7zip.sourceforge.net/>
+p7zip - http://p7zip.sourceforge.net/
 
-## Paid applications
-=======
 eslogger - Announced in this video https://developer.apple.com/videos/play/wwdc2022/110345/
 
-Faronics Deep Freeze (69.30 USD) - <https://www.faronics.com/products/deep-freeze/mac>
-=======
-## Paid applications (not required):
 
-**Deep Freeze is not required to revert the machine to a clean state. You can use APFS snapshots and revert using the repair menu on reboot. Deep Freeze just expedites this cleanup process. Maybe Apple can implement a constant recover mode that always reverts snapshot.**
-
-`tmutil snapshot`
-
+## Paid applications:
 Faronics Deep Freeze (69.30 USD) - https://www.faronics.com/products/deep-freeze/mac
->>>>>>> 11d9192 (deep freeze not required (all free!), instructions for eslogger usage)
 
 ESFriend is designed to use a physical macOS machine as the sandbox environment, then perform cleanup by using Faronics Deep Freeze.
 
-## Analysis machine set up
 
+## Analysis machine set up
 This setup assumes you will use a Mac for the analysis machine. Windows and Linux should just work fine, configuration instructions are not yet included.
 
-### Install homebrew
 
+### Install homebrew:
 We all know the command:
 
 `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
 
-### Install python
 
+### Install python:
 I'm using python3.9.13
 
 Link to installer page:
-<https://www.python.org/downloads/release/python-3913/>
+https://www.python.org/downloads/release/python-3913/
+
 
 ### Install mitmproxy and ssdeep
-
 `brew install mongodb-community mitmproxy ssdeep`
 
 Follow the instructions from brew to configure mongodb to automatically start on reboot
 
 **Important Note: The analysis process for ESFriend uses a mitmproxy script to extract headers. Installing the python package for mitmproxy so that you can write additional scripts will replace the up to date mitmproxy on $PATH with an older version that will crash if used to capture packets from the sandbox machine.**
 
-### Install necessary python modules
 
+### Install necessary python modules:
 Installing these to the system because I have not investigated environment variables with subprocess.
 
 `sudo -H python3.9 -m pip install pymongo ssdeep Flask Flask-Table`
 
 **Important Note: You can install Flask and Flask-Table to a virtualenv to keep those modules off of the system python3.9 environment. The modules `pymongo` and `ssdeep` are used in subprocesses and necessary on the system at this time. Additionally, `ssdeep` is only used for greating goodlist entries, not comparing at this time.**
 
-## Sandbox machine set up
 
+## Sandbox machine set up
 Analysis machine can be any physical macOS machine, Intel or Apple silcon.
 
-### Install Rosetta (on Apple Silicon machines)
 
+### Install Rosetta (on Apple Silicon machines):
 You'll need any x86 application to show the prompt to install Rosetta. Even running a simple hello world program will start the process.
 
 Let me know if you need help generating an x86 MachO.
 
-### Install homebrew
 
+### Install homebrew:
 Again:
 
 `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+
 
 ### Install p7zip
 
 `brew install p7zip`
 
-### Install python
 
+### Install python:
 Again - link to installer page:
-<https://www.python.org/downloads/release/python-3913/>
+https://www.python.org/downloads/release/python-3913/
 
-### Install necessary python modules
+
+### Install necessary python modules:
 
 `sudo -H python3.9 -m pip install pymongo`
 
 THe only module needed on the analysis machine at this time is pymongo.
 
-### Install ESF Playground
 
-<<<<<<< HEAD
-<https://themittenmac.com/the-esf-playground/>
-=======
 ### Install ESF Playground:
-
-**ESF Playground can be replaced by eslogger on macOS Ventura. You must add `--eslogger` argument to `agent.py` command line.**
-
 https://themittenmac.com/the-esf-playground/
->>>>>>> 11d9192 (deep freeze not required (all free!), instructions for eslogger usage)
 
 Configure the SystemExtension so ESF Playground can be run without root.
 
 User Security & Privacy menu to add `Terminal.app` to Full Disk Access
 
-### Script configuration
-=======
 **To use eslogger instead of ESF Playground, use the `--eslogger` argument with the `./agent.py` command.**
 
 `./agent.py --eslogger`
 
+
+### Script configuration:
 `ESFriend/config.py` and `agent/agent_config.py` need to be modified so they contain the correct path for corresponding applications, correct database connection string, and machine configuration.
 
 Modify the shebangs in each file so they point to your python3.9 system installation for both Analysis (ESFriend directory) and Sandbox (agent directory) scripts.
 
 Ensure execution flags are set for scripts that are called through subprocess or cron.
 
-### Configure cron for Full Disk Access
 
+### Configure cron for Full Disk Access:
 Use Security & Privacy menu to add `/usr/sbin/cron` to Full Disk Access
 
 Configure crontab to run the agent.py script on reboot
@@ -149,36 +123,24 @@ Configure crontab to run the agent.py script on reboot
 
 `@reboot cd /path/to/agent/ && ./agent.py`
 
-<<<<<<< HEAD
-### Configure sudoers file to allow reboot without password
-=======
 or, to configure usage of eslogger:
 
 `@reboot cd /path/to/agent/ && ./agent.py --eslogger`
-=======
-or, to use eslogger for output:
 
-`@reboot cd /path/to/agent/ && ./agent.py --eslogger`
 
->>>>>>> 11d9192 (deep freeze not required (all free!), instructions for eslogger usage)
-
+### Configure sudoers file to allow reboot without password:
 `sudo nano /etc/sudoers`
 
 Add the following line to the bottom of the file, replacing `username` with your own user account
 
-`username ALL=NOPASSWD:/sbin/reboot, /usr/bin/eslogger`
+`username ALL=NOPASSWD:/sbin/reboot`
 
-**eslogger path will be required in the future**
 
-### Install Faronics Deep Freeze for Mac
-
-<https://www.faronics.com/products/deep-freeze/mac>
-=======
 ### Install Faronics Deep Freeze for Mac:
 
 **Deep Freeze is not required to have a functional sandbox. You can create a snapshot using `tmutil snapshot` then restore the clean state using the macOS Repair menu. Deep Freeze does expedite the cleanup process by a considerable amount of time.**
 
-<https://www.faronics.com/products/deep-freeze/mac>
+https://www.faronics.com/products/deep-freeze/mac
 
 30 day trial is available
 
@@ -186,8 +148,8 @@ Switch the system to a frozen state
 
 **Important Note: Invalid key from payment processor. After purchasing the software you may need to contact support immediately because the license provided from the payment processer is not valid. Contacting support through the payment processor has been successful for me in the past.**
 
-## Using ESFriend
 
+## Using ESFriend
 After the agent is configured and running you can start the Analysis machine process
 
 `./esfriend.py`
@@ -200,8 +162,8 @@ To clean only the job, machine, and run databases use:
 
 `./esfriend.py --clean`
 
-### File submission
 
+### File submission:
 `./submit.py sample_path timeout tags`
 
 Example:
@@ -211,7 +173,6 @@ Example:
 You must include a timeout (in seconds) and tags (delimited however you like), there are no default values.
 
 ### ESFriend Web
-
 Results can be viewed using the ESFriend web.py script
 
 From the ESFriend folder type:
@@ -221,8 +182,8 @@ From the ESFriend folder type:
 `flask run`
 
 By default you should be able to navigate to:
-<http://localhost:5000>
+http://localhost:5000
+
 
 ### Goodlist
-
 `goodlist.py` can be used to generate a list of good event strings that should be ignored from a previous run. Upon execution it will prompt you with a list of runs and ask you to select which to generate good event strings from.
