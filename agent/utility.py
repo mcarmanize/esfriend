@@ -109,8 +109,9 @@ def get_event_string(event):
                     event["responsible_pid_command"],
                     event["ppid_command"],
                 )
-            elif "command" in event_keys:
-                event_string = "{},{}".format(event["event"], event["command"])
+            # tuning down the filtering for process events that have limited information
+            # elif "command" in event_keys:
+            #     event_string = "{},{}".format(event["event"], event["command"])
         elif "file" in event_keys:
             if "original" in event_keys:
                 event_string = "{},{},{},{}".format(
