@@ -365,8 +365,8 @@ class FileChangeMonitor:
             ] = sha256sum(file)
 
     def upload_file(self, file, responsible_pid, responsible_path):
+        db = DatabaseConnection(MONGO_CONNECTION_STRING, self.job_id)
         try:
-            db = DatabaseConnection(MONGO_CONNECTION_STRING, self.job_id)
             file_id = db.insert_file_with_file_path(file)
             db.job.insert_one(
                 {
