@@ -2,7 +2,7 @@
 """
     wrapping eslogger for macOS Ventura and greater
 
-    it looks like we'll need to 
+    it looks like we'll need to redo filtering for the new event format
 """
 
 import sys
