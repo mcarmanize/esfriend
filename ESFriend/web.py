@@ -51,8 +51,8 @@ class ParentTable(Table):
         "PID", "proc", url_kwargs=dict(job_id="job_id", pid="pid"), attr="pid"
     )
     command = Col("Command")
-    pcommand = Col("Parent Command")
     rcommand = Col("Responsible Command")
+    pcommand = Col("Parent Command")
     job_id = Col("Job ID", show=False)
 
 
@@ -60,8 +60,8 @@ class ParentData(object):
     def __init__(self, pid, command, pcommand, rcommand, job_id):
         self.pid = pid
         self.command = command
-        self.pcommand = pcommand
         self.rcommand = rcommand
+        self.pcommand = pcommand
         self.job_id = job_id
 
 
