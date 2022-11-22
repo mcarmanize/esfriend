@@ -33,7 +33,7 @@ class LogStreamWrapper:
 
     def run_logstream(self):
         try:
-            logstream_command = ["/usr/bin/log", "stream", "--style", "ndjson"]
+            logstream_command = ["/usr/bin/log", "stream", "--style", "ndjson", "--debug"]
             logstream_process = subprocess.Popen(logstream_command, stdout=subprocess.PIPE)
             for line in iter(logstream_process.stdout.readline, ""):
                 self.insert_log_message(line)
