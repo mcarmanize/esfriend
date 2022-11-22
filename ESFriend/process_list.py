@@ -36,37 +36,29 @@ class DatabaseConnection:
 
 
 class RunLogAnalyzer:
-    def __init__(self, selection=None):
+    def __init__(self, job_id=None):
         self.db = DatabaseConnection(MONGO_CONNECTION_STRING)
-        if selection is not None:
-            self.selected_collection = selection
-            self.generate_process_tree()
-        else:
+        if job_id is None:
             self.select_run_log()
+        else:
+            self.selected_collection = job_id+"eslog"
+            self.generate_process_tree()
 
     def select_run_log(self):
-        self.collections = self.db.run_logs.list_collections()
-        self.collections = sorted(self.collections, key=lambda d: d["name"])
-
+        self.runs = self.db.client.esfriend["jobs"].find()
         os.system("clear")
-
         collection_index = 0
         collection_name_list = []
         print("\n   Select run to analyze:\n")
-        for collection in self.collections:
-            collection_name = collection["name"]
-            job_data = self.db.client.esfriend.jobs.find_one(
-                {"_id": ObjectId(collection_name)}
-            )
-            file_name = job_data["file_name"]
-            timeout = job_data["timeout"]
-            if "tags" in job_data.keys():
-                collection_tags = job_data["tags"]
-            else:
-                collection_tags = None
-            collection_name_list.append(collection_name)
-            print(f"  {collection_index}: {file_name} {timeout} {collection_tags}")
-            collection_index += 1
+        for run in self.runs:
+            if run["job_progress"] == 5:
+                collection_name = str(run["_id"])+"eslog"
+                file_name = run["file_name"]
+                timeout = run["timeout"]
+                tags = run["tags"]
+                collection_name_list.append(collection_name)
+                print(f"  {collection_index}: {file_name} {timeout} {tags}")
+                collection_index += 1
         selection = int(input("\n    Enter a number: "))
         self.selected_collection = collection_name_list[selection]
         self.print_process_tree()
@@ -113,24 +105,24 @@ class RunLogAnalyzer:
         cursor = self.db.run_logs[self.selected_collection].find(
             {
                 "$or": [
-                    {"event": "ES_EVENT_TYPE_NOTIFY_EXEC"},
-                    # {"event": "ES_EVENT_TYPE_NOTIFY_FORK"},
-                    # {"event": "ES_EVENT_TYPE_NOTIFY_EXIT"}
+                    {"event_type_description": "exec"},
+                    # {"event_type_description": "fork"},
+                    # {"event_type_description": "exit"}
                 ]
             }
         )
         for item in cursor:
             # Original ppid and ppid look to be the same in most cases.
             item_keys = item.keys()
-            if "responsible_pid_command" in item_keys and "ppid_command" in item_keys:
-                self.add_process(item["pid"], item["command"], item["ppid_command"], item["responsible_pid_command"])
+            if "rcommand" in item_keys and "pcommand" in item_keys:
+                self.add_process(item["pid"], item["command"], item["pcommand"], item["rcommand"])
                 # self.process_tree[item["ppid"]]["children"].append(item["pid"])
-            elif "responsible_pid_command" in item_keys:
+            elif "rcommand" in item_keys:
                 self.add_process(
-                    item["pid"], item["command"], rcommand=item["responsible_pid_command"]
+                    item["pid"], item["command"], rcommand=item["rcommand"]
                 )
-            elif "ppid_command" in item_keys:
-                self.add_process(item["ppid"], item["command"], pcommand=item["ppid_command"])
+            elif "pcommand" in item_keys:
+                self.add_process(item["ppid"], item["command"], pcommand=item["pcommand"])
                 self.process_tree[item["ppid"]]["children"].append(item["pid"])
             else:
                 self.add_process(item["pid"], item["command"])
@@ -138,7 +130,8 @@ class RunLogAnalyzer:
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        selection = sys.argv[1]
-        RunLogAnalyzer(selection=selection)
+        job_id = sys.argv[1]
+        RunLogAnalyzer(job_id=job_id)
     else:
         RunLogAnalyzer()
+        # print("Usage: ./process_list.py job_id")
