@@ -74,6 +74,10 @@ def add_x_flag(file_path):
     return result
 
 def get_event_string(event):
+    """ 
+        needs to be updated to exclude eslogger messages
+        also considering doing this all on the esfriend machine
+    """
     try:
         event_string = ""
         event_keys = event.keys()
@@ -187,53 +191,36 @@ def get_event_string(event):
     except:
         return ""
 
-def format_event(message):
-    """
-        psutil modules requires sudo, so we use subprocess to call ps
-    """
-    message_keys = message.keys()
-    if "process" in message_keys:
-        commands = {}
-        message_process_keys = message["process"].keys()
-        if "command" not in message_process_keys:
-            get_ps = subprocess.Popen(
-                ["ps", "-p", str(message["process"]["pid"]), "-o", "command="],
-                stdout=subprocess.PIPE,
-            )
-            pid_command = get_ps.stdout.read()
-            message["process"]["command"] = pid_command.decode("utf-8")
-        for key in message_process_keys:
-            if key == "ppid":
-                get_ps = subprocess.Popen(
-                    ["ps", "-p", str(message["process"]["ppid"]), "-o", "command="],
-                    stdout=subprocess.PIPE,
-                )
-                ppid_command = get_ps.stdout.read()
-                commands["ppid_command"] = ppid_command.decode("utf-8")
-            if key == "responsible_pid":
-                get_ps = subprocess.Popen(
-                    [
-                        "ps",
-                        "-p",
-                        str(message["process"]["responsible_pid"]),
-                        "-o",
-                        "command=",
-                    ],
-                    stdout=subprocess.PIPE,
-                )
-                responsible_pid_command = get_ps.stdout.read()
-                commands["responsible_pid_command"] = responsible_pid_command.decode(
-                    "utf-8"
-                )
-        message["process"] = {**message["process"], **commands}
-        message = {**message, **message["process"]}
-        message["process"] = None
+def get_process_data(event):
+    if event["event_type"] == 9:
+        event["command"] = " ".join(event["event"]["exec"]["args"])
+    event["ppid"] = event["process"]["ppid"]
+    event["rpid"] = event["process"]["responsible_audit_token"]["pid"]
+    if event["ppid"] == 1:
+        event["pcommand"] = "/sbin/launchd"
     else:
-        for key in message_keys:
-            if isinstance(message[key], dict):
-                message = {**message, **message[key]}
-                message[key] = None
-    return message
+        get_pps = subprocess.Popen(
+            ["ps", "-p", str(event["ppid"]), "-o", "command="],
+            stdout=subprocess.PIPE,
+        )
+        event["pcommand"] = get_pps.stdout.read().decode("utf-8")
+    if event["ppid"] != event["process"]["original_ppid"]:
+        event["oppid"] = event["process"]["original_ppid"]
+        get_opps = subprocess.Popen(
+            ["ps", "-p", str(event["oppid"]), "-o", "command="],
+            stdout=subprocess.PIPE,
+        )
+        event["opcommand"] = get_opps.stdout.read().decode("utf-8")
+    get_rps = subprocess.Popen(
+            ["ps", "-p", str(event["rpid"]), "-o", "command="],
+            stdout=subprocess.PIPE,
+        )
+    event["rcommand"] = get_rps.stdout.read().decode("utf-8")
+    return event
+
+def get_file_data(event):
+    pass
+
 
 
 """
@@ -241,7 +228,6 @@ def format_event(message):
     I'm depending on network traffic to track any new files downloaded to the system
     Will need to depend on unpacking data from included resources if I can at least track new files
 """
-
 
 class FileChangeMonitor:
     def __init__(self, job_id):
