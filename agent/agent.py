@@ -34,10 +34,9 @@ AGENT_PID = os.getpid()
 
 
 class ESFriendAgent:
-    def __init__(self, eslogger=False):
+    def __init__(self):
         self.start_time = None
         self.job = None
-        self.eslogger = eslogger
         self.get_job()
 
     def get_job(self):
@@ -102,13 +101,9 @@ class ESFriendAgent:
             f.write(file_data)
             f.close()
         db.client.close()
-        esf_command = ["./esfpg.py", str(self.job_id), str(AGENT_PID)]
         eslogger_command = ["./eslogger.py", str(self.job_id), str(AGENT_PID)]
         log_command = ["./log.py", str(self.job_id)]
-        if self.eslogger:
-            self.eslogger_process = subprocess.Popen(eslogger_command)
-        else:
-            self.esf_process = subprocess.Popen(esf_command)
+        self.eslogger_process = subprocess.Popen(eslogger_command)
         self.log_process = subprocess.Popen(log_command)
         # this sleep allows the system running ESFriend to start mitmdump in time
         time.sleep(5)
@@ -178,10 +173,7 @@ class ESFriendAgent:
         if self.start_time is not None:
             now = int(time.time())
             if (now - self.start_time) > self.timeout:
-                if self.eslogger:
-                    self.eslogger_process.send_signal(signal.SIGINT)
-                else:
-                    self.esf_process.send_signal(signal.SIGINT)
+                self.eslogger_process.send_signal(signal.SIGINT)
                 self.log_process.send_signal(signal.SIGINT)
                 db = DatabaseConnection(MONGO_CONNECTION_STRING)
                 unassign_job = db.esfriend_machines.update_one(
@@ -202,7 +194,4 @@ class ESFriendAgent:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1] == "--eslogger":
-        ESFriendAgent(eslogger=True)
-    else:
-        ESFriendAgent()
+    ESFriendAgent()
