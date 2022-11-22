@@ -31,11 +31,20 @@ class DatabaseConnection:
         self.esfriend_machines = self.esfriend["machines"]
         if job_id is not None:
             self.run_logs = self.client.run_logs
-            syslog_collection = job_id+"syslog"
-            self.job = self.run_logs[job_id]
-            self.syslog = self.run_logs[syslog_collection]
-            self.job.create_index("event")
-            self.job.create_index("pid")
+            self.eslog = self.run_logs[job_id+"eslog"]
+            self.eslog.create_index("event_type")
+            self.eslog.create_index("pid")
+            self.eslog.create_index("process_path")
+            self.eslog.create_index("event_type_description")
+            self.syslog = self.run_logs[job_id+"syslog"]
+            self.syslog.create_index("traceID")
+            self.syslog.create_index("eventMessage")
+            self.syslog.create_index("eventType")
+            self.syslog.create_index("subsystem")
+            self.syslog.create_index("category")
+            self.syslog.create_index("processImagePath")
+            self.syslog.create_index("senderImagePath")
+            
 
     def insert_file_with_file_path(self, file_path):
         fs = gridfs.GridFS(self.esfriend_grid)
