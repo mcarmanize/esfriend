@@ -121,6 +121,7 @@ def get_job_list():
 
 def get_parent_list(proc_list, job_id):
     parent_list = []
+    print(proc_list)
     for pid in proc_list:
         parent_list.append(
             ParentData(
@@ -132,10 +133,11 @@ def get_parent_list(proc_list, job_id):
 
 def get_distinct_list(job_id):
     db = DatabaseConnection()
-    distinct_events = db.run_logs[job_id].distinct("event")
+    collection_name = job_id+"eslog"
+    distinct_events = db.run_logs[collection_name].distinct("event_type_description")
     distinct_list = []
     for event in distinct_events:
-        event_count = db.run_logs[job_id].count_documents({"event": event})
+        event_count = db.run_logs[collection_name].count_documents({"event_type_description": event})
         distinct_list.append(DistinctData(event, event_count, job_id))
     return distinct_list
 
@@ -166,6 +168,7 @@ def job(job_id):
         parent_table = ParentTable(parent_list)
         distinct_table = DistinctTable(get_distinct_list(job_id))
         all_procs_url = f"http://localhost:5000/all_procs/{job_id}"
+        log_messages_url = f"http://localhost:5000/logstream_messages/{job_id}"
         return render_template(
             "report.html",
             title=file_name,
@@ -175,16 +178,16 @@ def job(job_id):
             parent_table=parent_table,
             distinct_table=distinct_table,
             all_procs_url=all_procs_url,
+            log_messages_url=log_messages_url,
         )
     else:
-        return "No report available."
+        return "No report available. You may need to look at the run via database query."
 
 
 @app.route("/get_mitmdump/<string:job_id>")
 def get_mitmdump(job_id):
     try:
         db = DatabaseConnection()
-        # mitmdump_record = db.run_logs[job_id].find_one({"mitm_file_id": {"$exists": True}})
         mitmdump_record = db.esfriend_jobs.find_one({"_id": ObjectId(job_id)})
         mitmdump_file_id = mitmdump_record["mitm_file_id"]
         file_handle = db.get_file_for_download(mitmdump_file_id)
@@ -199,7 +202,7 @@ def get_mitmdump(job_id):
 def proc(job_id, pid):
     try:
         db = DatabaseConnection()
-        pid_cursor = db.run_logs[job_id].find({"pid": pid}, {"_id": 0}).sort("_id", 1)
+        pid_cursor = db.run_logs[job_id+"eslog"].find({"pid": pid}, {"_id": 0}).sort("_id", 1)
         pid_events = []
         for event in pid_cursor:
             pid_events.append(event)
@@ -211,7 +214,7 @@ def proc(job_id, pid):
 @app.route("/events/<string:job_id>/<string:event_type>")
 def events(job_id, event_type):
     db = DatabaseConnection()
-    events = db.run_logs[job_id].find({"event": event_type}, {"_id": 0}).sort("_id", 1)
+    events = db.run_logs[job_id+"eslog"].find({"event_type_description": event_type}, {"_id": 0}).sort("_id", 1)
     event_list = []
     for event in events:
         event_list.append(event)
@@ -236,13 +239,13 @@ def print_procs(job_id):
 @app.route("/all_procs/<string:job_id>")
 def all_procs(job_id):
     db = DatabaseConnection()
-    unique_pids = db.run_logs[job_id].distinct("pid")
-    print(len(unique_pids))
+    collection = job_id+"eslog"
+    unique_pids = db.run_logs[collection].distinct("pid")
     pid_list = []
     for pid in unique_pids:
-        proc_path = db.run_logs[job_id].find_one({"pid": pid, "proc_path": {"$exists": True}})
-        if proc_path is not None and "proc_path" in proc_path:
-            pid_list.append(PidData(pid, proc_path["proc_path"], job_id))
+        proc_path = db.run_logs[collection].find_one({"pid": pid, "process_path": {"$exists": True}})
+        if proc_path is not None and "process_path" in proc_path:
+            pid_list.append(PidData(pid, proc_path["process_path"], job_id))
         elif proc_path is None:
             pid_list.append(PidData(pid, "no process path", job_id))
     print(len(pid_list))
@@ -252,3 +255,31 @@ def all_procs(job_id):
         title="All processes:",
         pid_table=pid_table,
     )
+
+
+class LogStreamMessageTable(Table):
+    message = LinkCol(
+        "Message", "logstream_messages", url_kwargs=dict(job_id="job_id"), attr="message"
+    )
+    count = Col("Count")
+    job_id = Col("Job ID", show=False)
+
+class LogStreamMessageData(object):
+    def __init__(self, message, count, job_id):
+        self.message = message
+        self.count = count
+        self.job_id = job_id
+
+@app.route("/logstream_messages/<string:job_id>")
+def logstream_messages(job_id):
+    db = DatabaseConnection()
+    message_list = []
+    syslog_collection = job_id+"syslog"
+    distinct_messages = db.run_logs[syslog_collection].distinct("eventMessage")
+    print(distinct_messages)
+    for message in distinct_messages:
+        message_count = db.run_logs[syslog_collection].count_documents({"eventMessage": message})
+        message_list.append(LogStreamMessageData(message, message_count, job_id))
+    message_list.sort(key=lambda message_data: message_data.count)
+    logstream_message_table = LogStreamMessageTable(message_list)
+    return render_template("logstream_messages.html", title="Log Stream messages:", logstream_message_table=logstream_message_table)
