@@ -22,6 +22,7 @@
 from pymongo import MongoClient
 import gridfs
 from config import MONGO_CONNECTION_STRING
+import hashlib
 
 
 class DatabaseConnection:
@@ -52,3 +53,11 @@ class DatabaseConnection:
     def insert_string(self, string):
         fs = gridfs.GridFS(self.esfriend_grid)
         return fs.put(string, encoding="utf-8")
+
+    def add_message_md5(self, job_id):
+        syslog_collection = job_id+"syslog"
+        self.run_logs[syslog_collection].create_index("message_md5")
+        distinct_messages = self.run_logs[syslog_collection].distinct("eventMessage")
+        for message in distinct_messages:
+            message_md5 = hashlib.md5(message.encode("utf-8")).hexdigest()
+            self.run_logs[syslog_collection].update_many({"eventMessage": message}, {"$set": {"message_md5": message_md5}})
