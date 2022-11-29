@@ -73,124 +73,6 @@ def add_x_flag(file_path):
     )
     return result
 
-def get_event_string(event):
-    """ 
-        needs to be updated to exclude eslogger messages
-        also considering doing this all on the esfriend machine
-    """
-    try:
-        event_string = ""
-        event_keys = event.keys()
-        if "process" in event_keys:
-            if (
-                "command" in event_keys
-                and "ppid_command" in event_keys
-                and "responsible_pid_command" in event_keys
-            ):
-                event_string = "{},{},{},{}".format(
-                    event["event"],
-                    event["responsible_pid_command"],
-                    event["ppid_command"],
-                    event["command"],
-                )
-            elif (
-                "command" in event_keys
-                and "responsible_pid_command" in event_keys
-                and "ppid_command" not in event_keys
-            ):
-                event_string = "{},{},{}".format(
-                    event["event"],
-                    event["responsible_pid_command"],
-                    event["command"],
-                )
-            elif (
-                "command" in event_keys
-                and "ppid_command" in event_keys
-                and "responsible_pid_command" not in event_keys
-            ):
-                event_string = "{},{},{}".format(
-                    event["event"],
-                    event["responsible_pid_command"],
-                    event["ppid_command"],
-                )
-            # tuning down the filtering for process events that have limited information
-            # elif "command" in event_keys:
-            #     event_string = "{},{}".format(event["event"], event["command"])
-        elif "file" in event_keys:
-            if "original" in event_keys:
-                event_string = "{},{},{},{}".format(
-                    event["event"],
-                    event["proc_path"],
-                    event["original"],
-                    event["destination"],
-                )
-            else:
-                event_string = "{},{},{}".format(
-                    event["event"],
-                    event["proc_path"],
-                    event["destination"],
-                )
-        elif "xattr" in event_keys:
-            if "attribute_name" in event_keys:
-                event_string = "{},{},{},{}".format(
-                    event["event"],
-                    event["proc_path"],
-                    event["destination"],
-                    event["attribute_name"],
-                )
-            else:
-                event_string = "{},{},{}".format(
-                    event["event"],
-                    event["proc_path"],
-                    event["destination"],
-                )
-        elif "misc" in event_keys:
-            event_string = "{},{},{}".format(
-                event["event"], event["proc_path"], event["path"]
-            )
-        elif "ioKit" in event_keys:
-            event_string = "{},{},{},{}".format(
-                event["event"],
-                event["proc_path"],
-                event["iokit_class"],
-                event["client_type"],
-            )
-        elif "mprotect" in event_keys:
-            # the additional fields below can be used to process memory in real time on the machines.
-            # event["mprotect"]["size"], event["mprotect"]["address"]
-            event_string = "{},{},{}".format(
-                event["event"],
-                event["proc_path"],
-                event["protection"],
-            )
-        elif "uipcConnect" in event_keys:
-            event_string = "{},{},{},{},{}".format(
-                event["event"],
-                event["proc_path"],
-                event["path"],
-                event["domain"],
-                event["protocol_type"],
-            )
-        elif "signal" in event_keys:
-            event_string = "{},{},{},{}".format(
-                event["event"],
-                event["proc_path"],
-                event["target_path"],
-                event["sig"],
-            )
-        elif "acl" in event_keys:
-            event_string = "{},{},{},{}".format(
-                event["event"],
-                event["proc_path"],
-                event["path"],
-                event["type"],
-            )
-        if event_string == "":
-            print(event)
-        return event_string
-    except:
-        return ""
-
 def get_process_data(event):
     if event["event_type"] == 9:
         event["command"] = " ".join(event["event"]["exec"]["args"])
@@ -203,25 +85,26 @@ def get_process_data(event):
             ["ps", "-p", str(event["ppid"]), "-o", "command="],
             stdout=subprocess.PIPE,
         )
-        event["pcommand"] = get_pps.stdout.read().decode("utf-8")
+        event["pcommand"] = get_pps.stdout.read().decode("utf-8").rstrip(" \n")
     if event["ppid"] != event["process"]["original_ppid"]:
         event["oppid"] = event["process"]["original_ppid"]
         get_opps = subprocess.Popen(
             ["ps", "-p", str(event["oppid"]), "-o", "command="],
             stdout=subprocess.PIPE,
         )
-        event["opcommand"] = get_opps.stdout.read().decode("utf-8")
-    get_rps = subprocess.Popen(
-            ["ps", "-p", str(event["rpid"]), "-o", "command="],
-            stdout=subprocess.PIPE,
-        )
-    event["rcommand"] = get_rps.stdout.read().decode("utf-8")
+        event["opcommand"] = get_opps.stdout.read().decode("utf-8").rstrip(" \n")
+    if event["rpid"] == 1:
+        event["rcommand"] = "/sbin/launchd"
+    else:
+        get_rps = subprocess.Popen(
+                ["ps", "-p", str(event["rpid"]), "-o", "command="],
+                stdout=subprocess.PIPE,
+            )
+        event["rcommand"] = get_rps.stdout.read().decode("utf-8").rstrip(" \n")
     return event
 
 def get_file_data(event):
     pass
-
-
 
 """
     This is a mess without running with sudo (for both checksum and upload)
