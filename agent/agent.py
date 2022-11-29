@@ -47,7 +47,11 @@ class ESFriendAgent:
                 self.machine_data = db.esfriend_machines.find_one(
                     {"machine_name": MACHINE_NAME}
                 )
-                if (
+                if self.machine_data is None:
+                    # esfriend database does not have machine record
+                    # this condition is met when esfriend has been cleaned or the database is unavailable
+                    db.client.close()
+                elif (
                     "assigned_job" in self.machine_data
                     and self.machine_data["assigned_job"] is not None
                 ):
@@ -89,6 +93,7 @@ class ESFriendAgent:
                         # setting the start time here forces a reboot in 3 seconds
                         # self.start_time = int(time.time()) - (self.timeout + 3)
                 else:
+                    # mongodb is running but no job assigned
                     db.client.close()
             self.wait_for_timeout()
             time.sleep(5)
