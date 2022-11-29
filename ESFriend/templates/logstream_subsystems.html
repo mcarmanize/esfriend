@@ -14,23 +14,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/> -->
 
-{% extends "base.html" %}
+    {% extends "base.html" %}
 
-{% block content %}
+    {% block content %}
 
-mitmdump url:<br>
-<a href="{{ mitmdump_url }}">{{ mitmdump_url }}</a><br><br>
-All processes:<br>
-<a href='{{ all_procs_url }}'>{{ all_procs_url }}</a><br><br>
-Log subsystems:
-<a href='{{ log_subsystems_url }}'>{{ log_subsystems_url }}</a><br><br>
-Log messages:
-<a href='{{ log_messages_url }}'>{{ log_messages_url }}</a><br><br>
-execution output:<br>
-{{ execution_output }}<br><br>
-{{ parent_table }}<br><br>
-{{ distinct_table }}<br><br>
-request headers:<br>
-{{ request_headers|safe }}<br>
+    {{ logstream_subsystems_table }}
 
-{% endblock %}
+    {% endblock %}
