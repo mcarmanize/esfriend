@@ -24,7 +24,6 @@ import os
 import sys
 import subprocess
 import json
-import time
 from database import DatabaseConnection
 from bson.objectid import ObjectId
 from config import MITMDUMP
@@ -36,6 +35,7 @@ class Analyze:
         self.job_id = job_id
         self.pcap_path = os.path.join("pcap", self.job_id)
         self.db = DatabaseConnection()
+        self.db.add_message_md5(self.job_id)
         self.report = {}
         self.job_data = self.db.esfriend_jobs.find_one({"_id": ObjectId(self.job_id)})
         if "output_file_id" in self.job_data.keys():
