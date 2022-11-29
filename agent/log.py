@@ -26,6 +26,8 @@ class LogStreamWrapper:
             message_json = json.loads(message)
             # traceID can be an int value that mongodb cannot accept
             message_json["traceID"] = str(message_json["traceID"])
+            if message_json["subsystem"] == "":
+                message_json["subsystem"] = "None"
             self.db.syslog.insert_one(message_json)
         except Exception as err:
             print(err)
