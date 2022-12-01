@@ -1,7 +1,7 @@
-# ESFriend
+# esfriend
 ## A minimal malware analysis sandbox for macOS
 
-Introducing ESFriend. A coordinated set of python wrappers for powerful applications on macOS, coming together to form a malware analysis sandbox. These application wrappers cooperate with each other using MongoDB to pass control to the next step.
+Introducing esfriend. A coordinated set of python wrappers for powerful applications on macOS, coming together to form a malware analysis sandbox. These application wrappers cooperate with each other using MongoDB to pass control to the next step.
 
 ## October 17 2022 Update:
 
@@ -27,7 +27,7 @@ eslogger - Announced in this video https://developer.apple.com/videos/play/wwdc2
 ## Paid applications:
 Faronics Deep Freeze (69.30 USD) - https://www.faronics.com/products/deep-freeze/mac
 
-ESFriend is designed to use a physical macOS machine as the sandbox environment, then perform cleanup by using Faronics Deep Freeze.
+esfriend is designed to use a physical macOS machine as the sandbox environment, then perform cleanup by using Faronics Deep Freeze.
 
 
 ## Analysis machine set up
@@ -52,7 +52,7 @@ https://www.python.org/downloads/release/python-3913/
 
 Follow the instructions from brew to configure mongodb to automatically start on reboot
 
-**Important Note: The analysis process for ESFriend uses a mitmproxy script to extract headers. Installing the python package for mitmproxy so that you can write additional scripts will replace the up to date mitmproxy on $PATH with an older version that will crash if used to capture packets from the sandbox machine.**
+**Important Note: The analysis process for esfriend uses a mitmproxy script to extract headers. Installing the python package for mitmproxy so that you can write additional scripts will replace the up to date mitmproxy on $PATH with an older version that will crash if used to capture packets from the sandbox machine.**
 
 
 ### Install necessary python modules:
@@ -109,9 +109,9 @@ User Security & Privacy menu to add `Terminal.app` to Full Disk Access
 
 
 ### Script configuration:
-`ESFriend/config.py` and `agent/agent_config.py` need to be modified so they contain the correct path for corresponding applications, correct database connection string, and machine configuration.
+`esfriend/config.py` and `agent/agent_config.py` need to be modified so they contain the correct path for corresponding applications, correct database connection string, and machine configuration.
 
-Modify the shebangs in each file so they point to your python3.9 system installation for both Analysis (ESFriend directory) and Sandbox (agent directory) scripts.
+Modify the shebangs in each file so they point to your python3.9 system installation for both Analysis (esfriend directory) and Sandbox (agent directory) scripts.
 
 Ensure execution flags are set for scripts that are called through subprocess or cron.
 
@@ -130,13 +130,14 @@ or, to configure usage of eslogger:
 `@reboot cd /path/to/agent/ && ./agent.py --eslogger`
 
 
-### Configure sudoers file to allow reboot without password:
+### Configure sudoers file to allow reboot, eslogger, and python without password:
 `sudo nano /etc/sudoers`
 
 Add the following line to the bottom of the file, replacing `username` with your own user account
 
-`username ALL=NOPASSWD:/sbin/reboot`
+`username ALL=NOPASSWD:/sbin/reboot, /usr/bin/eslogger, /Users/username/Desktop/agent/agent.py`
 
+Make sure to replace the path to agent.py with the path on your system
 
 ### Install Faronics Deep Freeze for Mac:
 
@@ -151,7 +152,7 @@ Switch the system to a frozen state
 **Important Note: Invalid key from payment processor. After purchasing the software you may need to contact support immediately because the license provided from the payment processer is not valid. Contacting support through the payment processor has been successful for me in the past.**
 
 
-## Using ESFriend
+## Using esfriend
 After the agent is configured and running you can start the Analysis machine process
 
 `./esfriend.py`
@@ -174,10 +175,10 @@ Example:
 
 You must include a timeout (in seconds) and tags (delimited however you like), there are no default values.
 
-### ESFriend Web
-Results can be viewed using the ESFriend web.py script
+### esfriend Web
+Results can be viewed using the esfriend web.py script
 
-From the ESFriend folder type:
+From the esfriend folder type:
 
 `export FLASK_APP=web`
 
