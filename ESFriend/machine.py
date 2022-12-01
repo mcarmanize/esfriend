@@ -43,7 +43,7 @@ class Machine:
                     "assigned_job": None,
                 }
                 result = db.esfriend_machines.insert_one(machine_data)
-                print(f"Added {machine} to ESFriend")
+                print(f"Added {machine} to esfriend")
             else:
                 raise Exception(
                     "Ping Failed. Machine is either off or incorrectly configured."

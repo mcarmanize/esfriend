@@ -1,6 +1,6 @@
 #!/Library/Frameworks/Python.framework/Versions/3.9/bin/python3.9
 """
-    ESFriend waits for job and assigns them when a machine is available
+    esfriend waits for job and assigns them when a machine is available
     It will then wait for a signal to start mitmdump to watch network traffic
     from the machine with the agent running
 
@@ -30,7 +30,7 @@ from machine import Machine
 from utility import ping
 
 
-class ESFriend:
+class Esfriend:
     def __init__(self, clean=False, clean_goods=False):
         if clean is True:
             self.cleanup()
@@ -138,8 +138,8 @@ class ESFriend:
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         if sys.argv[1] == "--clean":
-            ESFriend(clean=True)
+            Esfriend(clean=True)
         if sys.argv[1] == "--cleangoods":
-            ESFriend(clean_goods=True)
+            Esfriend(clean_goods=True)
     else:
-        ESFriend()
+        Esfriend()

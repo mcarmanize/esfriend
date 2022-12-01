@@ -33,7 +33,7 @@ from agent_config import MACHINE_NAME, MACHINE_TYPE, MONGO_CONNECTION_STRING
 AGENT_PID = os.getpid()
 
 
-class ESFriendAgent:
+class EsfriendAgent:
     def __init__(self):
         self.start_time = None
         self.job = None
@@ -114,7 +114,7 @@ class ESFriendAgent:
         log_command = ["./log.py", str(self.job_id)]
         self.eslogger_process = subprocess.Popen(eslogger_command)
         self.log_process = subprocess.Popen(log_command)
-        # this sleep allows the system running ESFriend to start mitmdump in time
+        # this sleep allows the system running esfriend to start mitmdump in time
         time.sleep(5)
         self.start_time = int(time.time())
         # The next step is to launch the malware and record the results
@@ -203,4 +203,4 @@ class ESFriendAgent:
 
 
 if __name__ == "__main__":
-    ESFriendAgent()
+    EsfriendAgent()

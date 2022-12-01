@@ -142,13 +142,13 @@ def get_distinct_list(job_id):
     return distinct_list
 
 
-app = Flask("ESFriend Web")
+app = Flask("esfriend web")
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 
 @app.route("/")
 def index():
     table = AnalysisTable(get_job_list())
-    return render_template("table.html", title="ESFriend Web", table=table)
+    return render_template("table.html", title="esfriend web", table=table)
 
 
 @app.route("/job/<string:job_id>")

@@ -1,5 +1,5 @@
 """
-    Config file for ESFriend analysis machine
+    Config file for esfriend analysis machine
 
     esfriend - a minimal malware analysis sandbox framework for macOS
     Copyright (C) <2022> Matt Carman
