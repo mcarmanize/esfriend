@@ -24,10 +24,12 @@ import os
 import sys
 import subprocess
 import json
+import hashlib
 from database import DatabaseConnection
 from bson.objectid import ObjectId
 from config import MITMDUMP
 from process_list import RunLogAnalyzer
+from utility import get_event_string
 
 
 class Analyze:
@@ -71,11 +73,34 @@ class Analyze:
         self.report["request_headers"] = request_headers
         self.report["proc_list"] = proc_tree
         self.report["mitmdump_url"] = mitmdump_url
+        self.apply_goodlist()
         # delete the headers file and mitmdump file from disk
         os.remove("request_headers.txt")
         os.remove(self.pcap_path)
         print(f"Analysis finished for job id: {self.job_id}")
 
+    def apply_goodlist(self):
+        es_collection = self.job_id+"eslog"
+        ls_collection = self.job_id+"syslog"
+        self.db.run_logs[es_collection].create_index("goodlist")
+        self.db.run_logs[ls_collection].create_index("goodlist")
+        es_cursor = self.db.run_logs[es_collection].find()
+        for event in es_cursor:
+            event_string = get_event_string(event)
+            event_md5 = hashlib.md5(event_string.encode("utf-8")).hexdigest()
+            good_event = self.db.esfriend["esgoodlist"].find({"event_md5": event_md5})
+            if good_event is None:
+                self.db.run_logs[es_collection].update_one({"_id": event["_id"]}, {"$set": {"goodlist": False}})
+            else:
+                self.db.run_logs[es_collection].update_one({"_id": event["_id"]}, {"$set": {"goodlist": True}})
+        ls_cursor = self.db.run_logs[ls_collection].find()
+        for event in ls_cursor:
+            good_event = self.db.esfriend["lsgoodlist"].find({"message_md5": event["message_md5"]})
+            if good_event is None:
+                self.db.run_logs[ls_collection].update_one({"_id": event["_id"]}, {"$set": {"goodlist": False}})
+            else:
+                self.db.run_logs[ls_collection].update_one({"_id": event["_id"]}, {"$set": {"goodlist": True}})
+        
 
 if __name__ == "__main__":
     job_id = sys.argv[1]
