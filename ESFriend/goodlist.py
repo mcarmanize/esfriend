@@ -48,7 +48,7 @@ class GoodList:
         # log stream goodlist
         self.lsgoodlist = self.db.client.esfriend["lsgoodlist"]
         self.esgoodlist.create_index("event_md5")
-        self.lsgoodlist.create_index("event_md5")
+        self.lsgoodlist.create_index("message_md5")
         self.select_run_log()
 
     def select_run_log(self):
@@ -77,8 +77,8 @@ class GoodList:
         for log_event in ls_cursor:
             message_md5 = hashlib.md5(log_event["eventMessage"].encode("utf-8")).hexdigest()
             message_ssdeep = ssdeep.hash(log_event["eventMessage"].encode("utf-8"))
-            event_exists = self.lsgoodlist.find_one({"message_md5": message_md5})
-            if event_exists is None:
+            event_exists = self.lsgoodlist.find_one({"message_md5": message_md5}) != None
+            if not event_exists:
                 event_insert = {
                     "event_message": log_event["eventMessage"],
                     "message_md5": message_md5,
@@ -90,8 +90,8 @@ class GoodList:
             event_string = get_event_string(event)
             event_md5 = hashlib.md5(event_string.encode("utf-8")).hexdigest()
             event_ssdeep = ssdeep.hash(event_string.encode("utf-8"))
-            event_exists = self.esgoodlist.find_one({"event_md5": event_md5})
-            if event_exists is None:
+            event_exists = self.esgoodlist.find_one({"event_md5": event_md5}) != None
+            if not event_exists:
                 event_insert = {
                     "event_string": event_string,
                     "event_md5": event_md5,
