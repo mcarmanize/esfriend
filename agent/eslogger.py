@@ -2,6 +2,8 @@
 """
     wrapping eslogger for macOS Ventura and greater
 
+    this script must now be called with sudo to allow collection of all files modified
+
     esfriend - a minimal malware analysis sandbox framework for macOS
     Copyright (C) <2022> Matt Carman
 
@@ -23,11 +25,10 @@ import sys
 import os
 import subprocess
 import json
-import hashlib
 from database import DatabaseConnection
 from bson.objectid import ObjectId
 from agent_config import MONGO_CONNECTION_STRING, ESLOGGER
-from utility import get_process_data
+from utility import get_process_data, sha256sum
 
 
 ESLOGGER_PID = os.getpid()
@@ -71,11 +72,44 @@ class ESLogger(object):
 
     def insert_event(self, line):
         event = json.loads(line)
-        event["pid"] = event["process"]["audit_token"]["pid"]
-        event["process_path"] = event["process"]["executable"]["path"]
-        event["event_type_description"] = list(event["event"].keys())[0]
-        event = get_process_data(event)
-        self.db.eslog.insert_one(event)
+        if not event["process"]["is_es_client"]:
+            event["pid"] = event["process"]["audit_token"]["pid"]
+            event["process_path"] = event["process"]["executable"]["path"]
+            event["event_type_description"] = list(event["event"].keys())[0]
+            event = get_process_data(event)
+            self.db.eslog.insert_one(event)
+            if event["event_type_description"] == "close" and event["event"]["close"]["modified"]:
+                # do file stuff
+                if event["event"]["close"]["target"]["stat"]["st_size"] > 0:
+                    # get checksum/file_type, upload file, add file upload record
+                    try:
+                        file_sha256 = sha256sum(event["close"]["target"]["path"])
+                        file_type_command = ["file", event["event"]["close"]["target"]["path"]]
+                        file_type_exec = subprocess.Popen(
+                            file_type_command,
+                            stdout=subprocess.PIPE
+                        )
+                        file_type = file_type_exec.stdout.read().decode("utf-8").rstrip(" \n")
+                        file_id = self.db.insert_file_with_file_path(event["event"]["close"]["target"]["path"])
+                        file_dict = {
+                            "file_sha256": file_sha256,
+                            "file_type": file_type,
+                            "file_path": event["event"]["close"]["target"]["path"],
+                            "file_size": event["event"]["close"]["target"]["stat"]["st_size"],
+                            "pcommand": event["pcommand"],
+                            "rcommand": event["rcommand"],
+                            "file_id": file_id,
+                        }
+                        self.db.files.insert_one(file_dict)
+                    except Exception as err:
+                        file_dict = {
+                            "file_path": event["event"]["close"]["target"]["path"],
+                            "file_size": event["event"]["close"]["target"]["stat"]["st_size"],
+                            "pcommand": event["pcommand"],
+                            "rcommand": event["rcommand"],
+                            "error": "{}".format(err)
+                        }
+
 
 
 if __name__ == "__main__":
