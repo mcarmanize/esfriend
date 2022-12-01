@@ -18,12 +18,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
-from pymongo import MongoClient
+from pymongo import MongoClient, errors
 import gridfs
 
 
 class DatabaseConnection:
     def __init__(self, connection_string, job_id=None):
+        self.errors = errors
         self.client = MongoClient(connection_string)
         self.esfriend = self.client.esfriend
         self.esfriend_grid = self.client.esfriend_grid

@@ -43,58 +43,62 @@ class ESFriendAgent:
         while True:
             # check if the machine has been assigned a job
             if self.job is None:
-                db = DatabaseConnection(MONGO_CONNECTION_STRING)
-                self.machine_data = db.esfriend_machines.find_one(
-                    {"machine_name": MACHINE_NAME}
-                )
-                if self.machine_data is None:
-                    # esfriend database does not have machine record
-                    # this condition is met when esfriend has been cleaned or the database is unavailable
-                    db.client.close()
-                elif (
-                    "assigned_job" in self.machine_data
-                    and self.machine_data["assigned_job"] is not None
-                ):
-                    self.job = self.machine_data["assigned_job"]
-                    # get job data from the database
-                    job_data = db.esfriend_jobs.find_one({"_id": self.job})
-                    print(job_data)
-                    # quick check to ensure we're not picking up a job already run
-                    if job_data["job_progress"] == 1:
-                        # set the job progress to 2 so that the esfriend agent can start mitmproxy
-                        # on the configured port
-                        set_mitm = db.esfriend_jobs.update_one(
-                            {"_id": self.job}, {"$set": {"job_progress": 2}}
-                        )
-                        self.job_id = job_data["_id"]
-                        self.file_id = job_data["file_id"]
-                        self.file_name = job_data["file_name"]
-                        self.sha256 = job_data["sha256"]
-                        self.timeout = job_data["timeout"]
+                try:
+                    db = DatabaseConnection(MONGO_CONNECTION_STRING)
+                    self.machine_data = db.esfriend_machines.find_one(
+                        {"machine_name": MACHINE_NAME}
+                    )
+                    if self.machine_data is None:
+                        # esfriend database does not have machine record
+                        # this condition is met when esfriend has been cleaned and the database is still available
                         db.client.close()
-                        self.run_job()
+                    elif (
+                        "assigned_job" in self.machine_data
+                        and self.machine_data["assigned_job"] is not None
+                    ):
+                        self.job = self.machine_data["assigned_job"]
+                        # get job data from the database
+                        job_data = db.esfriend_jobs.find_one({"_id": self.job})
+                        print(job_data)
+                        # quick check to ensure we're not picking up a job already run
+                        if job_data["job_progress"] == 1:
+                            # set the job progress to 2 so that the esfriend agent can start mitmproxy
+                            # on the configured port
+                            set_mitm = db.esfriend_jobs.update_one(
+                                {"_id": self.job}, {"$set": {"job_progress": 2}}
+                            )
+                            self.job_id = job_data["_id"]
+                            self.file_id = job_data["file_id"]
+                            self.file_name = job_data["file_name"]
+                            self.sha256 = job_data["sha256"]
+                            self.timeout = job_data["timeout"]
+                            db.client.close()
+                            self.run_job()
+                        else:
+                            # this branch of code catches when a previous run errored out and was not able to clean up
+                            # we unassign the job to move onto the next
+                            unassign_job = db.esfriend_machines.update_one(
+                                {"machine_name": MACHINE_NAME},
+                                {"$set": {"assigned_job": None}},
+                            )
+                            set_error = db.esfriend_jobs.update_one(
+                                {"_id": self.job},
+                                {
+                                    "$set": {
+                                        "error": "Expected job progress 1 - run aborted"
+                                    }
+                                },
+                            )
+                            db.client.close()
+                            self.job = None
+                            # setting the start time here forces a reboot in 3 seconds
+                            # self.start_time = int(time.time()) - (self.timeout + 3)
                     else:
-                        # this branch of code catches when a previous run errored out and was not able to clean up
-                        # we unassign the job to move onto the next
-                        unassign_job = db.esfriend_machines.update_one(
-                            {"machine_name": MACHINE_NAME},
-                            {"$set": {"assigned_job": None}},
-                        )
-                        set_error = db.esfriend_jobs.update_one(
-                            {"_id": self.job},
-                            {
-                                "$set": {
-                                    "error": "Expected job progress 1 - run aborted"
-                                }
-                            },
-                        )
+                        # mongodb is running but no job assigned
                         db.client.close()
-                        self.job = None
-                        # setting the start time here forces a reboot in 3 seconds
-                        # self.start_time = int(time.time()) - (self.timeout + 3)
-                else:
-                    # mongodb is running but no job assigned
-                    db.client.close()
+                except db.errors.ConnectionFailure:
+                    # database unavailable, patience please
+                    pass
             self.wait_for_timeout()
             time.sleep(5)
 
