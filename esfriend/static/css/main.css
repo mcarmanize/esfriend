@@ -1,0 +1,192 @@
+
+:root {
+    /* background: linear-gradient(90deg, #1B1F29 0%, #DCDFE6 17%, #EEF0F6 30%); */
+    background: linear-gradient(90deg, #1B1F29 0%, #DCDFE6 16%, #EEF0F6 100%);
+}
+
+:root {
+    --blue: #007bff;
+    --indigo: #6610f2;
+    --purple: #6f42c1;
+    --pink: #e83e8c;
+    --red: #dc3545;
+    --orange: #fd7e14;
+    --yellow: #ffc107;
+    --green: #28a745;
+    --teal: #20c997;
+    --cyan: #17a2b8;
+    --white: #fff;
+    --gray: #6c757d;
+    --gray-dark: #343a40;
+    --primary: #071e4c;
+    --secondary: #6c757d;
+    --success: #00b177;
+    --info: #17a2b8;
+    --warning: #f56f15;
+    --danger: #f05b7e;
+    --light: #f5f7fa;
+    --dark: #343a40;
+    --font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    background: #EEF0F6;
+    
+}
+
+html {
+    font-family: sans-serif;
+    line-height: 1.15;
+    color: black;
+}
+
+body {
+    margin: 25px 120px 75px;
+}
+
+table.eventCountTable {
+    border: 2px solid #FFFFFF;
+    text-align: center;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  table.eventCountTable td, table.eventCountTable th {
+    border: 1px solid #FFFFFF;
+    padding: 3px;
+  }
+  table.eventCountTable tbody td {
+    font-size: 13px;
+  }
+  table.eventCountTable td:nth-child(even) {
+    background: #EBEBEB;
+  }
+  table.eventCountTable thead {
+    background: #FFFFFF;
+    border-bottom: 4px solid #333333;
+  }
+  table.eventCountTable thead th {
+    font-size: 15px;
+    font-weight: bold;
+    color: #333333;
+    text-align: center;
+    border-left: 2px solid #333333;
+  }
+  table.eventCountTable thead th:first-child {
+    border-left: none;
+    width: 140px;
+  }
+  table.eventCountTable thead th:nth-child(2) {
+    border-left: none;
+    width: 60px;
+  }
+
+  table.genTable {
+    border: 2px solid #FFFFFF;
+    width: 100%;
+    text-align: center;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  table.genTable td, table.eventCountTable th {
+    border: 1px solid #FFFFFF;
+    padding: 3px 3px;
+    word-wrap: break-word;
+  }
+  table.genTable tbody td {
+    font-size: 13px;
+  }
+  table.genTable td:nth-child(even) {
+    background: #EBEBEB;
+  }
+  table.genTable thead {
+    background: #FFFFFF;
+    border-bottom: 4px solid #333333;
+  }
+  table.genTable thead th {
+    font-size: 15px;
+    font-weight: bold;
+    color: #333333;
+    text-align: center;
+    border-left: 2px solid #333333;
+  }
+  table.genTable thead th:first-child {
+    border-left: none;
+    width: 60px;
+  }
+  
+  table.messageTable {
+    border: 2px solid #FFFFFF;
+    width: 100%;
+    text-align: center;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  table.messageTable td, table.eventCountTable th {
+    border: 1px solid #FFFFFF;
+    padding: 3px 3px;
+    word-wrap: break-word;
+  }
+  table.messageTable tbody td {
+    font-size: 13px;
+  }
+  table.messageTable tbody td:nth-child(1) {
+    text-align: left;
+  }
+  table.messageTable td:nth-child(even) {
+    background: #EBEBEB;
+  }
+  table.messageTable thead {
+    background: #FFFFFF;
+    border-bottom: 4px solid #333333;
+  }
+  table.messageTable thead th {
+    font-size: 15px;
+    font-weight: bold;
+    color: #333333;
+    text-align: center;
+    border-left: 2px solid #333333;
+  }
+  table.messageTable thead th:first-child {
+    border-left: none;
+  }
+  table.messageTable thead th:nth-child(2) {
+    width: 60px;
+  }
+
+
+  table.subsystemTable {
+    border: 2px solid #FFFFFF;
+    /* width: 100%; */
+    text-align: center;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  table.subsystemTable td, table.eventCountTable th {
+    border: 1px solid #FFFFFF;
+    padding: 3px 3px;
+    word-wrap: break-word;
+  }
+  table.subsystemTable tbody td {
+    font-size: 13px;
+  }
+  /* table.subsystemTable tbody td:nth-child(1) {
+    text-align: left;
+  } */
+  table.subsystemTable td:nth-child(even) {
+    background: #EBEBEB;
+  }
+  table.subsystemTable thead {
+    background: #FFFFFF;
+    border-bottom: 4px solid #333333;
+  }
+  table.subsystemTable thead th {
+    font-size: 15px;
+    font-weight: bold;
+    color: #333333;
+    text-align: center;
+    border-left: 2px solid #333333;
+  }
+  table.subsystemTable thead th:first-child {
+    border-left: none;
+  }
+  table.subsystemTable thead th:nth-child(2) {
+    width: 60px;
+  }
