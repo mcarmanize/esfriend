@@ -49,7 +49,7 @@ class JobData(object):
 
 class ParentTable(Table):
     pid = LinkCol(
-        "PID", "proc", url_kwargs=dict(job_id="job_id", pid="pid"), attr="pid"
+        "PID", "proc_events", url_kwargs=dict(job_id="job_id", pid="pid"), attr="pid"
     )
     command = Col("Command")
     pcommand = Col("Parent Command")
@@ -68,7 +68,7 @@ class ParentData(object):
 
 class PidTable(Table):
     pid = LinkCol(
-        "PID", "proc", url_kwargs=dict(job_id="job_id", pid="pid"), attr="pid"
+        "PID", "proc_events", url_kwargs=dict(job_id="job_id", pid="pid"), attr="pid"
     )
     proc_path = Col("Process")
     job_id = Col("Job ID", show=False)
@@ -154,33 +154,28 @@ def index():
 @app.route("/job/<string:job_id>")
 def job(job_id):
     db = DatabaseConnection()
-    # report_data = db.run_logs[job_id].find({"report_data": {"$exists": True}})
     job_data = db.esfriend_jobs.find_one({"_id": ObjectId(job_id)})
     file_name = job_data["file_name"]
     if "report_id" in job_data.keys():
         report = db.get_file(job_data["report_id"])
         report_data = json.loads(report)
-        mitm_url = report_data["mitmdump_url"]
-        exec_output = report_data["output"]
+        if report_data["output"] == "":
+            exec_output = "No output"
+        else:
+            exec_output = report_data["output"]
         req_headers = report_data["request_headers"]
         proc_list = report_data["proc_list"]
         parent_list = get_parent_list(proc_list, job_id)
-        parent_table = ParentTable(parent_list)
-        distinct_table = DistinctTable(get_distinct_list(job_id))
-        all_procs_url = f"http://localhost:5000/all_procs/{job_id}"
-        log_messages_url = f"http://localhost:5000/logstream_messages/{job_id}"
-        log_subsystems_url = f"http://localhost:5000/logstream_subsystems/{job_id}"
+        parent_table = ParentTable(parent_list, classes=["genTable"])
+        distinct_table = DistinctTable(get_distinct_list(job_id), classes=["eventCountTable"])
         return render_template(
             "report.html",
             title=file_name,
-            mitmdump_url=mitm_url,
             execution_output=exec_output,
             request_headers=req_headers,
             parent_table=parent_table,
             distinct_table=distinct_table,
-            all_procs_url=all_procs_url,
-            log_subsystems_url=log_subsystems_url,
-            log_messages_url=log_messages_url,
+            job_id=job_id,
         )
     else:
         return "No report available. You may need to look at the run via database query."
@@ -250,7 +245,7 @@ def all_procs(job_id):
             pid_list.append(PidData(pid, proc_path["process_path"], job_id))
         elif proc_path is None:
             pid_list.append(PidData(pid, "no process path", job_id))
-    pid_table = PidTable(pid_list)
+    pid_table = PidTable(pid_list, classes=["genTable"])
     return render_template(
         "processes.html",
         title="All processes:",
@@ -284,13 +279,13 @@ def logstream_messages(job_id):
         message_md5 = hashlib.md5(message.encode("utf-8")).hexdigest()
         message_list.append(LogStreamMessageData(message, message_count, job_id, message_md5))
     message_list.sort(key=lambda message_data: message_data.count)
-    logstream_message_table = LogStreamMessageTable(message_list)
+    logstream_message_table = LogStreamMessageTable(message_list, classes=["messageTable"])
     return render_template("logstream_messages.html", title="Log Stream messages:", logstream_message_table=logstream_message_table)
 
 @app.route("/logstream_message/<string:job_id>/<string:message_md5>")
 def logstream_message(job_id, message_md5):
     db = DatabaseConnection()
-    events = db.run_logs[job_id+"syslog"].find({"message_md5": message_md5}, {"_id": 0}).sort("_id", 1)
+    events = db.run_logs[job_id+"syslog"].find({"message_md5": message_md5}, {"_id": 0, "process":0}).sort("_id", 1)
     event_list = []
     for event in events:
         event_list.append(event)
@@ -298,7 +293,7 @@ def logstream_message(job_id, message_md5):
 
 class LogStreamSubsystemTable(Table):
     subsystem = Col("Subsystem")
-    count = LinkCol("Count", "logstream_subsystem", url_kwargs=dict(job_id="job_id", subsystem="subsystem"), attr="count")
+    count = LinkCol("Count", "subsystem_messages", url_kwargs=dict(job_id="job_id", subsystem="subsystem"), attr="count")
     job_id = Col("Job ID", show=False)
 
 class LogStreamSubsystemData(object):
@@ -316,19 +311,19 @@ def logstream_subsystems(job_id):
     for subsystem in distinct_subsystems:
         message_count = db.run_logs[syslog_collection].count_documents({"subsystem": subsystem})
         subsystem_list.append(LogStreamSubsystemData(subsystem, message_count, job_id))
-    logstream_subsystems_table = LogStreamSubsystemTable(subsystem_list)
+    logstream_subsystems_table = LogStreamSubsystemTable(subsystem_list, classes=["subsystemTable"])
     return render_template("logstream_subsystems.html", title="Log Stream subsystems:", logstream_subsystems_table=logstream_subsystems_table)
 
 
 class SubsystemMessagesTable(Table):
-    subsystem = Col("Subsystem")
-    count = LinkCol("Count", "logstream_subsystem", url_kwargs=dict(job_id="job_id", subsystem="subsystem"), attr="count")
+    message = Col("Message")
+    count = Col("Count")
     job_id = Col("Job ID", show=False)
     message_md5 = Col("Message md5", show=False)
 
 class SubsysteMessagesData(object):
-    def __init__(self, subsystem, count, job_id, message_md5):
-        self.subsystem = subsystem
+    def __init__(self, message, count, job_id, message_md5):
+        self.message = message
         self.count = count
         self.job_id = job_id
         self.message_md5 = message_md5
@@ -338,18 +333,45 @@ def subsystem_messages(job_id, subsystem):
     db = DatabaseConnection()
     message_list = []
     syslog_collection = job_id+"syslog"
-    distinct_subsystem_messages = db.run_logs[syslog_collection].distinct("eventMessage", {"subsystem": subsystem}).sort("_id", 1)
+    distinct_subsystem_messages = db.run_logs[syslog_collection].distinct("eventMessage", {"subsystem": subsystem})
     for message in distinct_subsystem_messages:
         message_md5 = hashlib.md5(message.encode("utf-8")).hexdigest()
         message_count = db.run_logs[syslog_collection].count_documents({"message_md5": message_md5})
-        message_list.append(LogStreamSubsystemData(subsystem, message_count, job_id))
-    logstream_subsystems_table = LogStreamSubsystemTable(message_list)
-    return render_template("logstream_subsystems.html", title="Log Stream subsystems:", logstream_subsystems_table=logstream_subsystems_table)
+        message_list.append(SubsysteMessagesData(message, message_count, job_id, message_md5))
+    logstream_subsystems_table = SubsystemMessagesTable(message_list, classes=["messageTable"])
+    return render_template("logstream_subsystems.html", title=f"Messages from subsystem: {subsystem}", logstream_subsystems_table=logstream_subsystems_table)
 
-@app.route("/logstream_subsystem/<string:job_id>/<string:subsystem>")
-def logstream_subsystem(job_id, subsystem):
+class ProcEventTypeTable(Table):
+    event_type = Col("Event Type")
+    count = LinkCol("Count", "proc_event_type", url_kwargs=dict(job_id="job_id", pid="pid", event_type="event_type"), attr="count")
+    job_id = Col("Job ID", show=False)
+    pid = Col("Pid", show=False)
+
+class ProcEventTypeData(object):
+    def __init__(self, event_type, count, job_id, pid):
+        self.event_type = event_type
+        self.count = count
+        self.job_id = job_id
+        self.pid = pid
+
+@app.route("/proc_events/<string:job_id>/<int:pid>")
+def proc_events(job_id, pid):
     db = DatabaseConnection()
-    events = db.run_logs[job_id+"syslog"].find({"subsystem": subsystem}, {"_id": 0}).sort("_id", 1)
+    es_collection = job_id+"eslog"
+    proc_event_list = []
+    process_path = db.run_logs[es_collection].find_one({"pid":pid})["process_path"]
+    distinct_pid_event_types = db.run_logs[es_collection].distinct("event_type_description", {"pid": pid})
+    for event_type in distinct_pid_event_types:
+        event_count = db.run_logs[es_collection].count_documents({"pid": pid, "event_type_description": event_type})
+        proc_event_list.append(ProcEventTypeData(event_type, event_count, job_id, pid))
+    proc_event_table = ProcEventTypeTable(proc_event_list, classes=["eventCountTable"])
+    return render_template("proc_events.html", title=f"Process Events: {process_path}", proc_event_table=proc_event_table)
+
+@app.route("/proc_event_type/<string:job_id>/<int:pid>/<string:event_type>")
+def proc_event_type(job_id, pid, event_type):
+    db = DatabaseConnection()
+    es_collection = job_id+"eslog"
+    events = db.run_logs[es_collection].find({"pid": pid, "event_type_description": event_type}, {"_id": 0, "process":0}).sort("_id", 1)
     event_list = []
     for event in events:
         event_list.append(event)
