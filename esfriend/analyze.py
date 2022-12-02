@@ -69,10 +69,8 @@ class Analyze:
         request_headers = request_headers.replace("\n", "<br>")
         proc_list_obj = RunLogAnalyzer(self.job_id)
         proc_tree = proc_list_obj.process_tree
-        mitmdump_url = f"http://localhost:5000/get_mitmdump/{self.job_id}"
         self.report["request_headers"] = request_headers
         self.report["proc_list"] = proc_tree
-        self.report["mitmdump_url"] = mitmdump_url
         self.apply_goodlist()
         # delete the headers file and mitmdump file from disk
         os.remove("request_headers.txt")
