@@ -79,12 +79,12 @@ class ESLogger(object):
             event = get_process_data(event)
             self.db.eslog.insert_one(event)
             if event["event_type_description"] == "close" and event["event"]["close"]["modified"]:
-                # do file stuff
                 if event["event"]["close"]["target"]["stat"]["st_size"] > 0:
+                    print("Uploading: {}".format(event["event"]["close"]["target"]["path"]))
                     # get checksum/file_type, upload file, add file upload record
                     try:
-                        file_sha256 = sha256sum(event["close"]["target"]["path"])
-                        file_type_command = ["file", event["event"]["close"]["target"]["path"]]
+                        file_sha256 = sha256sum(event["event"]["close"]["target"]["path"])
+                        file_type_command = ["file", "-b", event["event"]["close"]["target"]["path"]]
                         file_type_exec = subprocess.Popen(
                             file_type_command,
                             stdout=subprocess.PIPE
@@ -99,17 +99,20 @@ class ESLogger(object):
                             "pcommand": event["pcommand"],
                             "rcommand": event["rcommand"],
                             "file_id": file_id,
+                            "upload_success": True
                         }
                         self.db.files.insert_one(file_dict)
                     except Exception as err:
+                        print(err)
                         file_dict = {
                             "file_path": event["event"]["close"]["target"]["path"],
                             "file_size": event["event"]["close"]["target"]["stat"]["st_size"],
                             "pcommand": event["pcommand"],
                             "rcommand": event["rcommand"],
-                            "error": "{}".format(err)
+                            "error": "{}".format(err),
+                            "upload_success": False
                         }
-
+                        self.db.files.insert_one(file_dict)
 
 
 if __name__ == "__main__":
