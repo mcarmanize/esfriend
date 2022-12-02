@@ -37,6 +37,7 @@ class EsfriendAgent:
     def __init__(self):
         self.start_time = None
         self.job = None
+        self.username = self.get_username()
         self.get_job()
 
     def get_job(self):
@@ -141,26 +142,51 @@ class EsfriendAgent:
             p7z(self.file_path)
             self.extacted_app_path = find_app_in_tmp()
             if self.extacted_app_path is not None:
-                app_command = ["/usr/bin/open", self.extacted_app_path]
+                app_command = [
+                    "/usr/bin/sudo",
+                    "-u",
+                    self.username,
+                    "/usr/bin/open", 
+                    self.extacted_app_path
+                ]
                 app_execute = subprocess.Popen(
                     app_command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
                 )
             else:
                 open_temp = subprocess.Popen(["/usr/bin/open", "/tmp"])
         elif self.package_type == ".dmg":
-            dmg_command = ["/usr/bin/open", self.file_path]
+            dmg_command = [
+                "/usr/bin/sudo",
+                "-u",
+                self.username,
+                "/usr/bin/open",
+                self.file_path
+            ]
             dmg_mount = subprocess.Popen(dmg_command)
         elif self.package_type == ".sh":
             x_flag_set = add_x_flag(self.file_path)
             if x_flag_set:
                 self.output = open("output.txt", "w")
                 sh_execute = subprocess.Popen(
-                    [self.file_path], stdout=self.output, stderr=self.output
+                    [
+                        "/usr/bin/sudo",
+                        "-u",
+                        self.username,
+                        self.file_path
+                    ], 
+                    stdout=self.output, 
+                    stderr=self.output
                 )
             else:
                 open_temp = subprocess.Popen(["open", "/tmp"])
         elif self.package_type == ".scpt":
-            scpt_command = ["/usr/bin/osascript", self.file_path]
+            scpt_command = [
+                "/usr/bin/sudo",
+                "-u",
+                self.username,
+                "/usr/bin/osascript",
+                self.file_path
+            ]
             self.output = open("output.txt", "w")
             scpt_execute = subprocess.Popen(
                 scpt_command, stdout=self.output, stderr=self.output
@@ -168,7 +194,12 @@ class EsfriendAgent:
             scpt_execute.communicate()
         elif self.package_type == ".o":
             x_flag_set = add_x_flag(self.file_path)
-            macho_command = [self.file_path]
+            macho_command = [
+                "/usr/bin/sudo",
+                "-u",
+                self.username,
+                self.file_path
+            ]
             if x_flag_set:
                 self.output = open("output.txt", "w")
                 macho_execute = subprocess.Popen(
@@ -200,6 +231,12 @@ class EsfriendAgent:
                 db.client.close()
                 time.sleep(5)
                 subprocess.Popen(["sudo", "/sbin/reboot"])
+
+    def get_username(self):
+        who_command = ["who"]
+        who_exec = subprocess.Popen(who_command, stdout=subprocess.PIPE)
+        username = who_exec.stdout.read().decode("utf-8").split(" ")[0]
+        return username
 
 
 if __name__ == "__main__":
