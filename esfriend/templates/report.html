@@ -18,14 +18,10 @@
 
 {% block content %}
 
-mitmdump url:<br>
-<a href="{{ mitmdump_url }}">{{ mitmdump_url }}</a><br><br>
-All processes:<br>
-<a href='{{ all_procs_url }}'>{{ all_procs_url }}</a><br><br>
-Log subsystems:
-<a href='{{ log_subsystems_url }}'>{{ log_subsystems_url }}</a><br><br>
-Log messages:
-<a href='{{ log_messages_url }}'>{{ log_messages_url }}</a><br><br>
+<a href="../get_mitmdump/{{ job_id }}">Download MITMDUMP</a><br><br>
+<a href='../all_procs/{{ job_id }}'>All Processes</a><br><br>
+<a href='../logstream_subsystems/{{ job_id }}'>Log Stream Subsystems</a><br><br>
+<a href='../logstream_messages/{{ job_id }}'>Log Stream Messages</a><br><br>
 execution output:<br>
 {{ execution_output }}<br><br>
 {{ parent_table }}<br><br>
