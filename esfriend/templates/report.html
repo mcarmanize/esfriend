@@ -18,15 +18,24 @@
 
 {% block content %}
 
-<a href="../get_mitmdump/{{ job_id }}">Download MITMDUMP</a><br><br>
-<a href='../all_procs/{{ job_id }}'>All Processes</a><br><br>
-<a href='../logstream_subsystems/{{ job_id }}'>Log Stream Subsystems</a><br><br>
-<a href='../logstream_messages/{{ job_id }}'>Log Stream Messages</a><br><br>
-execution output:<br>
-{{ execution_output }}<br><br>
-{{ parent_table }}<br><br>
-{{ distinct_table }}<br><br>
-request headers:<br>
-{{ request_headers|safe }}<br>
+<div class="hRow">
+<div class="hColumn"><a href="../get_mitmdump/{{ job_id }}">Download MITMDUMP</a></div>
+<div class="hColumn"><a href='../all_procs/{{ job_id }}'>All Processes</a></div>
+<div class="hColumn"><a href='../logstream_subsystems/{{ job_id }}'>Log Stream Subsystems</a></div>
+<div class="hColumn"><a href='../logstream_messages/{{ job_id }}'>Log Stream Messages</a></div>
+</div>
+<br><br>
 
+{{ parent_table }}<br><br>
+<div class="fRow">
+<div class="fColumn">{{ distinct_table }}<br><br></div>
+<div class="fColumn">execution output:<br>
+{{ execution_output }}<br><br>
+request headers:<br>
+{{ request_headers|safe }}
+</div>
+</div>
+<br><br>
+{{ dl_files_table }}<br><br>
+{{ missed_files_table }}
 {% endblock %}
