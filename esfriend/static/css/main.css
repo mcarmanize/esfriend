@@ -190,3 +190,104 @@ table.eventCountTable {
   table.subsystemTable thead th:nth-child(2) {
     width: 60px;
   }
+
+
+
+  table.mainTable {
+    border: 2px solid #FFFFFF;
+    width: 60%;
+    text-align: center;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  table.mainTable td, table.eventCountTable th {
+    border: 1px solid #FFFFFF;
+    padding: 3px 3px;
+    word-wrap: break-word;
+  }
+  table.mainTable tbody td {
+    font-size: 13px;
+  }
+  table.mainTable td:nth-child(even) {
+    background: #EBEBEB;
+  }
+  table.mainTable thead {
+    background: #FFFFFF;
+    border-bottom: 4px solid #333333;
+  }
+  table.mainTable thead th {
+    font-size: 15px;
+    font-weight: bold;
+    color: #333333;
+    text-align: center;
+    border-left: 2px solid #333333;
+  }
+  table.mainTable thead th:first-child {
+    border-left: none;
+  }
+  table.mainTable thead th:nth-child(2) {
+    border-left: none;
+    width: 80px;
+  }
+  table.mainTable thead th:nth-child(3) {
+    border-left: none;
+    width: 200px;
+  }
+
+
+  table.dlFileTable {
+    border: 2px solid #FFFFFF;
+    width: 100%;
+    text-align: center;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  table.dlFileTable td, table.eventCountTable th {
+    border: 1px solid #FFFFFF;
+    padding: 3px 3px;
+    word-wrap: break-word;
+  }
+  table.dlFileTable tbody td {
+    font-size: 13px;
+  }
+  table.dlFileTable td:nth-child(even) {
+    background: #EBEBEB;
+  }
+  table.dlFileTable thead {
+    background: #FFFFFF;
+    border-bottom: 4px solid #333333;
+  }
+  table.dlFileTable thead th {
+    font-size: 15px;
+    font-weight: bold;
+    color: #333333;
+    text-align: center;
+    border-left: 2px solid #333333;
+  }
+  table.dlFileTable thead th:first-child {
+    border-left: none;
+    width: 500px;
+  }
+
+
+.hColumn {
+  float: left;
+  width: 25%;
+  }
+
+.hRow:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.fColumn {
+  float: left;
+  width: 33%;
+  }
+
+.fRow:after {
+  content: "";
+  display: table;
+  clear: both;
+}
