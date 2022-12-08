@@ -86,14 +86,14 @@ class Analyze:
         for event in es_cursor:
             event_string = get_event_string(event)
             event_md5 = hashlib.md5(event_string.encode("utf-8")).hexdigest()
-            good_event = self.db.esfriend["esgoodlist"].find({"event_md5": event_md5})
+            good_event = self.db.esfriend["esgoodlist"].find_one({"event_md5": event_md5})
             if good_event is None:
                 self.db.run_logs[es_collection].update_one({"_id": event["_id"]}, {"$set": {"goodlist": False}})
             else:
                 self.db.run_logs[es_collection].update_one({"_id": event["_id"]}, {"$set": {"goodlist": True}})
         ls_cursor = self.db.run_logs[ls_collection].find()
         for event in ls_cursor:
-            good_event = self.db.esfriend["lsgoodlist"].find({"message_md5": event["message_md5"]})
+            good_event = self.db.esfriend["lsgoodlist"].find_one({"message_md5": event["message_md5"]})
             if good_event is None:
                 self.db.run_logs[ls_collection].update_one({"_id": event["_id"]}, {"$set": {"goodlist": False}})
             else:
