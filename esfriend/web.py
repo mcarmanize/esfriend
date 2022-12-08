@@ -147,7 +147,7 @@ app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 
 @app.route("/")
 def index():
-    table = AnalysisTable(get_job_list())
+    table = AnalysisTable(get_job_list(), classes=["mainTable"])
     return render_template("table.html", title="esfriend web", table=table)
 
 
@@ -168,6 +168,7 @@ def job(job_id):
         parent_list = get_parent_list(proc_list, job_id)
         parent_table = ParentTable(parent_list, classes=["genTable"])
         distinct_table = DistinctTable(get_distinct_list(job_id), classes=["eventCountTable"])
+        dl_files_table, missed_files_table = get_run_files(job_id)
         return render_template(
             "report.html",
             title=file_name,
@@ -175,6 +176,8 @@ def job(job_id):
             request_headers=req_headers,
             parent_table=parent_table,
             distinct_table=distinct_table,
+            dl_files_table=dl_files_table,
+            missed_files_table=missed_files_table,
             job_id=job_id,
         )
     else:
@@ -376,3 +379,73 @@ def proc_event_type(job_id, pid, event_type):
     for event in events:
         event_list.append(event)
     return jsonify(event_list)
+
+
+class FileTable(Table):
+    file_path = Col("File Path")
+    responsible_command = Col("Responsible Command")
+
+class FileData(object):
+    def __init__(self, file_path, responsible_command):
+        self.file_path = file_path
+        self.responsible_command = responsible_command
+
+class DLFileTable(Table):
+    file_path = Col("File Path")
+    file_type = Col("File Type")
+    file_size = Col("Size")
+    responsible_command = Col("Responsible Command")
+    file_sha256 = LinkCol("SHA256", "get_file", url_kwargs=dict(job_id="job_id", object_id="object_id"), attr="file_sha256")
+    object_id = Col("ObjectId", show=False)
+    job_id = Col("Job Id", show=False)
+
+class DLFileData(object):
+    def __init__(self, file_path, file_type, file_size, responsible_command, file_sha256, object_id, job_id):
+        self.file_path = file_path
+        self.file_type = file_type
+        self.file_size = file_size
+        self.responsible_command = responsible_command
+        self.file_sha256 = file_sha256
+        self.object_id = object_id
+        self.job_id = job_id
+
+def get_run_files(job_id):
+    files_collection = job_id + "files"
+    db = DatabaseConnection()
+    cursor = db.run_logs[files_collection].find()
+    uploaded_files = []
+    missed_files = []
+    for file_record in cursor:
+        if file_record["upload_success"]:
+            uploaded_files.append(
+                DLFileData(
+                    file_record["file_path"],
+                    file_record["file_type"],
+                    file_record["file_size"],
+                    file_record["rcommand"],
+                    file_record["file_sha256"],
+                    file_record["file_id"],
+                    job_id
+                )
+            )
+        else:
+            missed_files.append(
+                FileData(
+                    file_record["file_path"],
+                    file_record["rcommand"],
+                )
+            )
+    return DLFileTable(uploaded_files, classes=["dlFileTable"]), FileTable(missed_files, classes=["dlFileTable"])
+
+@app.route("/get_file/<string:job_id>/<string:object_id>")
+def get_file(job_id, object_id):
+    try:
+        files_collection = job_id+"files"
+        db = DatabaseConnection()
+        file_data = db.run_logs[files_collection].find_one({"file_id": ObjectId(object_id)})
+        file_handle = db.get_file_for_download(ObjectId(object_id))
+        return send_file(
+            file_handle, as_attachment=True, download_name=file_data["file_sha256"]
+        )
+    except Exception as err:
+        return err
