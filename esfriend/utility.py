@@ -54,12 +54,14 @@ def get_event_string(event):
         event_string = "{},{}".format(event["event_type_description"], event["process_path"])
         event_dict = {
             "access": access_string,
+            "authentication": authentication_string,
             "chdir": chdir_string,
             "clone": clone_string,
             "close": close_string,
             "create": create_string,
             "dup": dup_string,
             "exec": exec_string,
+            "extattr": extattr_string,
             "exit": exit_string,
             "fcntl": fcntl_string,
             "fork": fork_string,
@@ -86,6 +88,7 @@ def get_event_string(event):
             "setegid": setegid_string,
             "seteuid": seteuid_string,
             "setextattr": setextattr_string,
+            "setflags": setflags_string,
             "setgid": setgid_string,
             "setmode": setmode_string,
             "setowner": setowner_string,
@@ -93,6 +96,7 @@ def get_event_string(event):
             "signal": signal_string,
             "stat": stat_string,
             "truncate": truncate_string,
+            "uipc_bind": uipc_bind_string,
             "uipc_connect": uipc_connect_string,
             "unlink": unlink_string,
             "unmount": unmount_string,
@@ -114,6 +118,18 @@ def access_string(event_string, event):
     event_string += ",{},{}".format(
         event["event"]["access"]["target"]["path"],
         event["event"]["access"]["mode"]
+    )
+    return event_string
+
+def authentication_string(event_string, event):
+    event_string += ",{},{},{},{},{},{},{}".format(
+        event["event"]["authentication"]["data"]["od"]["instigator"]["executable"]["path"],
+        event["event"]["authentication"]["success"],
+        event["event"]["authentication"]["type"],
+        event["event"]["authentication"]["data"]["od"]["node_name"],
+        event["event"]["authentication"]["data"]["od"]["record_type"],
+        event["event"]["authentication"]["data"]["od"]["record_name"],
+        event["event"]["authentication"]["data"]["od"]["db_path"],
     )
     return event_string
 
@@ -167,6 +183,13 @@ def exec_string(event_string, event):
 
 def exit_string(event_string, event):
     event_string += ",{}".format(event["event"]["exit"]["stat"])
+    return event_string
+
+def extattr_string(event_string, event):
+    event_string += ",{},{}".format(
+        event["event"]["extattr"]["target"]["path"],
+        event["event"]["extattr"]["flags"]
+    )
     return event_string
 
 def fcntl_string(event_string, event):
@@ -333,6 +356,13 @@ def setextattr_string(event_string, event):
     )
     return event_string
 
+def setflags_string(event_string, event):
+    event_string += ",{},{}".format(
+        event["event"]["setflags"]["target"]["path"],
+        event["event"]["setflags"]["extattr"]
+    )
+    return event_string
+
 def setgid_string(event_string, event):
     event_string += ",{}".format(event["event"]["setgid"]["gid"])
     return event_string
@@ -369,6 +399,14 @@ def stat_string(event_string, event):
 
 def truncate_string(event_string, event):
     event_string += ",{}".format(event["event"]["truncate"]["target"]["path"])
+    return event_string
+
+def uipc_bind_string(event_string, event):
+    event_string += ",{},{},{}".format(
+        event["event"]["uipc_bind"]["dir"]["path"],
+        event["event"]["uipc_bind"]["filename"],
+        event["event"]["uipc_bind"]["mode"]
+    )
     return event_string
 
 def uipc_connect_string(event_string, event):
