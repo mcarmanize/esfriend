@@ -27,6 +27,11 @@
 <br><br>
 
 {{ parent_table }}<br><br>
+Files collected during run:<br>
+{{ dl_files_table }}<br><br>
+Files where collection failed during run:<br>
+{{ missed_files_table }}<br><br>
+
 <div class="fRow">
 <div class="fColumn">{{ distinct_table }}<br><br></div>
 <div class="fColumn">execution output:<br>
@@ -35,7 +40,4 @@ request headers:<br>
 {{ request_headers|safe }}
 </div>
 </div>
-<br><br>
-{{ dl_files_table }}<br><br>
-{{ missed_files_table }}
 {% endblock %}
