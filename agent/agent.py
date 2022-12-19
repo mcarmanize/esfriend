@@ -2,6 +2,8 @@
 """
     This agent runs on the sandbox machine
 
+    this script must now be called with sudo to allow collection of all files modified
+
     See README.md for system setup
 
     esfriend - a minimal malware analysis sandbox framework for macOS
@@ -111,10 +113,17 @@ class EsfriendAgent:
             f.write(file_data)
             f.close()
         db.client.close()
+        
+        # Using multiple processes to track events
         eslogger_command = ["./eslogger.py", str(self.job_id), str(AGENT_PID)]
-        log_command = ["./log.py", str(self.job_id)]
+        logstream_command = ["./log.py", str(self.job_id)]
+        eslogger_close_command = ["./eslogger_close.py", str(self.job_id)]
+        eslogger_exec_command = ["./eslogger_exec.py", str(self.job_id)]
+        self.eslogger_exec_process = subprocess.Popen(eslogger_exec_command)
         self.eslogger_process = subprocess.Popen(eslogger_command)
-        self.log_process = subprocess.Popen(log_command)
+        self.logstream_process = subprocess.Popen(logstream_command)
+        self.eslogger_close_process = subprocess.Popen(eslogger_close_command)
+
         # this sleep allows the system running esfriend to start mitmdump in time
         time.sleep(5)
         self.start_time = int(time.time())
@@ -214,7 +223,9 @@ class EsfriendAgent:
             now = int(time.time())
             if (now - self.start_time) > self.timeout:
                 self.eslogger_process.send_signal(signal.SIGINT)
-                self.log_process.send_signal(signal.SIGINT)
+                self.logstream_process.send_signal(signal.SIGINT)
+                self.eslogger_close_process.send_signal(signal.SIGINT)
+                self.eslogger_exec_process.send_signal(signal.SIGINT)
                 db = DatabaseConnection(MONGO_CONNECTION_STRING)
                 unassign_job = db.esfriend_machines.update_one(
                     {"machine_name": MACHINE_NAME}, {"$set": {"assigned_job": None}}
