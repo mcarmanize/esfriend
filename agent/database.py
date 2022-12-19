@@ -47,11 +47,6 @@ class DatabaseConnection:
             self.syslog.create_index("senderImagePath")
             self.files = self.run_logs[job_id+"files"]
             self.files.create_index("file_sha256")
-            self.files.create_index("file_type")
-            self.files.create_index("file_path")
-            self.files.create_index("pcommand")
-            self.files.create_index("rcommand")
-            self.files.create_index("file_id")
             
 
     def insert_file_with_file_path(self, file_path):
