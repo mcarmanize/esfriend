@@ -9,11 +9,20 @@ Introducing esfriend. A coordinated set of python wrappers for powerful applicat
 
 **I've added the option to use eslogger output instead of ESF Playground on macOS Ventura (where eslogger is available). I'm still working on parsing the output and gathering additional data. This at least gives me the ability to investigate the more complex output of eslogger in comparison to ESF Playground.**
 
-**Adding web results shortly.**
+## December 19 2022 Update:
+
+**esfriend no longer uses ESF Playground to record events, this means that macOS Ventura is required because we're using eslogger exclusively**
+
+**I had to split "close" events and "exec" events into their own eslogger wrapper scripts. Allowing a single eslogger process to monitor for a single event type ensures that we collect as many events as accurately as possible.**
+
+**I have also modified the css for the results website, as well as added more navigation options to help quickly analyze the output from eslogger and system log.**
+
+**pictures coming soon**
 
 
 ## Free applications:
-ESF Playground - https://themittenmac.com/the-esf-playground/
+
+ESF Playground - https://themittenmac.com/the-esf-playground/ - leaving this here because it helped get the ball rolling a lot
 
 mitmproxy - https://mitmproxy.org/
 
@@ -96,18 +105,6 @@ https://www.python.org/downloads/release/python-3913/
 THe only module needed on the analysis machine at this time is pymongo.
 
 
-### Install ESF Playground:
-https://themittenmac.com/the-esf-playground/
-
-Configure the SystemExtension so ESF Playground can be run without root.
-
-User Security & Privacy menu to add `Terminal.app` to Full Disk Access
-
-**To use eslogger instead of ESF Playground, use the `--eslogger` argument with the `./agent.py` command.**
-
-`./agent.py --eslogger`
-
-
 ### Script configuration:
 `esfriend/config.py` and `agent/agent_config.py` need to be modified so they contain the correct path for corresponding applications, correct database connection string, and machine configuration.
 
@@ -123,14 +120,9 @@ Configure crontab to run the agent.py script on reboot
 
 `crontab -e`
 
-`@reboot cd /path/to/agent/ && ./agent.py`
+`@reboot cd /path/to/agent/ && /usr/bin/sudo ./agent.py`
 
-or, to configure usage of eslogger:
-
-`@reboot cd /path/to/agent/ && ./agent.py --eslogger`
-
-
-### Configure sudoers file to allow reboot, eslogger, and python without password:
+### Configure sudoers file to allow reboot, eslogger, and the agent python without password:
 `sudo nano /etc/sudoers`
 
 Add the following line to the bottom of the file, replacing `username` with your own user account
