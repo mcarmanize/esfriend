@@ -30,6 +30,7 @@ from bson.objectid import ObjectId
 from config import MITMDUMP
 from process_list import RunLogAnalyzer
 from utility import get_event_string
+import traceback
 
 
 class Analyze:
@@ -54,27 +55,30 @@ class Analyze:
         )
 
     def analyze_run(self):
-        mitm_command = [
-            MITMDUMP,
-            "-s",
-            "save_headers.py",
-            "-r",
-            self.pcap_path,
-            "-p",
-            "8091",
-        ]
-        mitm_execute = subprocess.Popen(mitm_command, stdout=subprocess.DEVNULL)
-        mitm_execute.wait()
-        request_headers = open("request_headers.txt", "r").read()
-        request_headers = request_headers.replace("\n", "<br>")
+        try:
+            mitm_command = [
+                MITMDUMP,
+                "-s",
+                "save_headers.py",
+                "-r",
+                self.pcap_path,
+                "-p",
+                "8091",
+            ]
+            mitm_execute = subprocess.Popen(mitm_command, stdout=subprocess.DEVNULL)
+            mitm_execute.wait()
+            request_headers = open("request_headers.txt", "r").read()
+            request_headers = request_headers.replace("\n", "<br>")
+            self.report["request_headers"] = request_headers
+            # delete the headers file and mitmdump file from disk
+            os.remove("request_headers.txt")
+            os.remove(self.pcap_path)
+        except Exception:
+            traceback.print_exc()
         proc_list_obj = RunLogAnalyzer(self.job_id)
         proc_tree = proc_list_obj.process_tree
-        self.report["request_headers"] = request_headers
         self.report["proc_list"] = proc_tree
         self.apply_goodlist()
-        # delete the headers file and mitmdump file from disk
-        os.remove("request_headers.txt")
-        os.remove(self.pcap_path)
         print(f"Analysis finished for job id: {self.job_id}")
 
     def apply_goodlist(self):
