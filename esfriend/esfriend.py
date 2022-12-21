@@ -95,25 +95,25 @@ class Esfriend:
             time.sleep(5)
 
     def get_pending_job(self):
-        cursor = self.db.esfriend_jobs.find_one({"job_progress": 0})
-        if cursor is not None:
-            self.pending_job = cursor["_id"]
+        job = self.db.esfriend_jobs.find_one({"job_progress": 0})
+        if job is not None:
+            self.pending_job = job["_id"]
         else:
             self.pending_job = None
 
     def get_idle_machine(self):
-        cursor = self.db.esfriend_machines.find_one({"assigned_job": None})
-        if cursor is not None:
-            self.idle_machine = cursor["machine_name"]
+        idle_machine = self.db.esfriend_machines.find_one({"assigned_job": None})
+        if idle_machine is not None:
+            self.idle_machine = idle_machine["machine_name"]
         else:
             self.idle_machine = None
 
     def get_mitm_status(self):
-        cursor = self.db.esfriend_jobs.find_one({"job_progress": 2})
-        if cursor is not None:
-            mitm_job_id = cursor["_id"]
-            mitm_machine = cursor["assigned_machine"]
-            mitm_timeout = cursor["timeout"]
+        mitm_job = self.db.esfriend_jobs.find_one({"job_progress": 2})
+        if mitm_job is not None:
+            mitm_job_id = mitm_job["_id"]
+            mitm_machine = mitm_job["assigned_machine"]
+            mitm_timeout = mitm_job["timeout"]
             mitm_port = self.machine.machines[mitm_machine]["mitm_port"]
             command = ["./mitm.py", str(mitm_job_id), str(mitm_port), str(mitm_timeout)]
             mitm_execute = subprocess.Popen(command)
@@ -124,15 +124,15 @@ class Esfriend:
             self.pending_mitm = None
 
     def get_analyze_status(self):
-        cursor = self.db.esfriend_jobs.find_one({"job_progress": 4})
-        if cursor is not None:
+        analysis_job = self.db.esfriend_jobs.find_one({"job_progress": 4})
+        if analysis_job is not None:
             time.sleep(5)
-            analysis_job_id = cursor["_id"]
+            analysis_job_id = analysis_job["_id"]
             command = ["./analyze.py", str(analysis_job_id)]
-            analysis_execute = subprocess.Popen(command)
             self.db.esfriend_jobs.update_one(
                 {"_id": analysis_job_id}, {"$set": {"job_progress": 5}}
             )
+            analysis_execute = subprocess.Popen(command)
 
 
 if __name__ == "__main__":
