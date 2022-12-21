@@ -21,6 +21,7 @@
 import hashlib
 import subprocess
 import platform
+import traceback
 
 
 def sha256sum(file_path):
@@ -59,6 +60,7 @@ def get_event_string(event):
             "clone": clone_string,
             "close": close_string,
             "create": create_string,
+            "deleteextattr": deleteextattr_string,
             "dup": dup_string,
             "exec": exec_string,
             "extattr": extattr_string,
@@ -72,6 +74,7 @@ def get_event_string(event):
             "getattrlist": getattrlist_string,
             "getextattr": getextattr_string,
             "iokit_open": iokit_open_string,
+            "kextload": kextload_string,
             "listextattr": listextattr_string,
             "lookup": lookup_string,
             "mmap": mmap_string,
@@ -105,8 +108,8 @@ def get_event_string(event):
         }
         event_string = event_dict[event["event_type_description"]](event_string, event)
         return event_string
-    except Exception as err:
-        print(f"{err}\n{event}\n")
+    except Exception:
+        traceback.print_exc()
         return ""
 
 """
@@ -164,6 +167,13 @@ def create_string(event_string, event):
     event_string += ",{},{}".format(
         event["event"]["create"]["destination"]["existing_file"]["path"],
         event["event"]["create"]["acl"]
+    )
+    return event_string
+
+def deleteextattr_string(event_string, event):
+    event_string += ",{},{}".format(
+        event["event"]["deleteextattr"]["target"]["path"],
+        event["event"]["deleteextattr"]["extattr"]
     )
     return event_string
 
@@ -243,6 +253,12 @@ def iokit_open_string(event_string, event):
     event_string += ",{},{}".format(
         event["event"]["iokit_open"]["user_client_class"],
         event["event"]["iokit_open"]["user_client_type"]
+    )
+    return event_string
+
+def kextload_string(event_string, event):
+    event_string += ",{},{}".format(
+        event["event"]["kextload"]["identifier"]
     )
     return event_string
 
@@ -359,7 +375,7 @@ def setextattr_string(event_string, event):
 def setflags_string(event_string, event):
     event_string += ",{},{}".format(
         event["event"]["setflags"]["target"]["path"],
-        event["event"]["setflags"]["extattr"]
+        event["event"]["setflags"]["flags"]
     )
     return event_string
 
