@@ -19,6 +19,7 @@ Introducing esfriend. A coordinated set of python wrappers for powerful applicat
 
 **pictures coming soon**
 
+**I've also been using Faronics Deep Freeze with SIP disabled and it seems to be working fine. This configuration allows easier execution of most malware that is packaged correctly.**
 
 ## Free applications:
 
