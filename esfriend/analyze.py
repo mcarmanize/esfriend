@@ -38,6 +38,8 @@ class Analyze:
         self.job_id = job_id
         self.pcap_path = os.path.join("pcap", self.job_id)
         self.db = DatabaseConnection()
+        
+        # add message_md5 field to all messages in the log database
         self.db.add_message_md5(self.job_id)
         self.report = {}
         self.job_data = self.db.esfriend_jobs.find_one({"_id": ObjectId(self.job_id)})
