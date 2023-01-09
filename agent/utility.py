@@ -81,6 +81,17 @@ def get_pid_command(pid):
     command = get_ps.stdout.read().decode("utf-8").rstrip(" \n")
     return command
 
+def get_file_type(file_path):
+    try:
+        file_type_command = ["file", "-b", file_path]
+        file_type_exec = subprocess.Popen(
+            file_type_command,
+            stdout=subprocess.PIPE
+        )
+        file_type = file_type_exec.stdout.read().decode("utf-8").rstrip(" \n")
+        return file_type
+    except:
+        return "error"
 
 """
     we gather a list of supported events from eslogger
