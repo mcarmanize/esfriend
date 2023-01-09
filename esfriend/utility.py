@@ -284,8 +284,8 @@ def mmap_string(event_string, event):
 
 def mount_string(event_string, event):
     event_string += ",{},{}".format(
-        event["event"]["mount"]["stat_fs"]["f_mntfromname"],
-        event["event"]["mount"]["stat_fs"]["f_mntonname"]
+        event["event"]["mount"]["statfs"]["f_mntfromname"],
+        event["event"]["mount"]["statfs"]["f_mntonname"]
     )
     return event_string
 
