@@ -24,12 +24,11 @@
 """
 
 import os
-import sys
 import time
 import subprocess
 import signal
 from database import DatabaseConnection
-from utility import p7z, find_app_in_tmp, add_x_flag
+from utility import p7z, find_app_in_tmp, add_x_flag, get_file_type
 from agent_config import MACHINE_NAME, MACHINE_TYPE, MONGO_CONNECTION_STRING
 
 AGENT_PID = os.getpid()
@@ -172,6 +171,8 @@ class EsfriendAgent:
                 self.file_path
             ]
             dmg_mount = subprocess.Popen(dmg_command)
+            dmg_mount.communicate()
+            self.detonate_dmg()
         elif self.package_type == ".sh":
             x_flag_set = add_x_flag(self.file_path)
             if x_flag_set:
@@ -248,6 +249,37 @@ class EsfriendAgent:
         who_exec = subprocess.Popen(who_command, stdout=subprocess.PIPE)
         username = who_exec.stdout.read().decode("utf-8").split(" ")[0]
         return username
+
+    def detonate_dmg(self):
+        for root, dirs, files in os.walk("/Volumes"):
+            for file_name in files:
+                if root != "/Volumes/Macintosh HD":
+                    file_path = os.path.join(root, file_name)
+                    file_type = get_file_type(file_path)
+                    if file_type.startswith("Mach-O"):
+                        macho_command = [
+                            "/usr/bin/sudo",
+                            "-u",
+                            self.username,
+                            file_path
+                        ]
+                        self.output = open("output.txt", "w")
+                        macho_execute = subprocess.Popen(
+                            macho_command, stdout=self.output, stderr=self.output
+                        )
+                        macho_execute.communicate()
+                    if "zsh script" in file_type or "shell script" in file_type:
+                        self.output = open("output.txt", "w")
+                        sh_execute = subprocess.Popen(
+                            [
+                                "/usr/bin/sudo",
+                                "-u",
+                                self.username,
+                                file_path
+                            ], 
+                            stdout=self.output, 
+                            stderr=self.output
+                        )
 
 
 if __name__ == "__main__":
