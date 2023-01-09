@@ -43,17 +43,16 @@ class TcpdumpWrapper(object):
     def run_tcpdump_exec(self):
         try:
             tcpdump_command = ["/usr/bin/sudo", TCPDUMP, "-w", "tcpdump.out", "src not {0} and dst not {0}".format(ESFRIEND_SERVER)]
-            self.tcpdump_exec = subprocess.Popen(tcpdump_command, stdout=subprocess.PIPE)
+            tcpdump_exec = subprocess.Popen(tcpdump_command, stdout=subprocess.PIPE)
             # for line in iter(tcpdump_exec.stdout.readline, ""):
             #     if len(line) > 0:
             #         self.insert_event(line)
         except KeyboardInterrupt:
-            self.tcpdump_exec.terminate()
+            tcpdump_exec.terminate()
             self.db = DatabaseConnection(MONGO_CONNECTION_STRING, self.job_id)
             file_id = self.db.insert_file_with_file_path("tcpdump.out")
             self.db.esfriend_jobs.update_one({"_id": ObjectId(self.job_id)}, {"$set": {"tcpdump_file": file_id}})
             self.db.client.close()
-            
             print("Stopping tcpdump.")
             sys.exit()
 
