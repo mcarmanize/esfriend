@@ -126,12 +126,13 @@ class Esfriend:
     def get_analyze_status(self):
         analysis_job = self.db.esfriend_jobs.find_one({"job_progress": 4})
         if analysis_job is not None:
-            time.sleep(5)
             analysis_job_id = analysis_job["_id"]
-            command = ["./analyze.py", str(analysis_job_id)]
             self.db.esfriend_jobs.update_one(
                 {"_id": analysis_job_id}, {"$set": {"job_progress": 5}}
             )
+            # sleep to give time for mitmdump to finish
+            time.sleep(10)
+            command = ["./analyze.py", str(analysis_job_id)]
             analysis_execute = subprocess.Popen(command)
 
 
