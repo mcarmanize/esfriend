@@ -27,7 +27,7 @@ import json
 from database import DatabaseConnection
 from bson.objectid import ObjectId
 from agent_config import MONGO_CONNECTION_STRING, ESLOGGER
-from utility import sha256sum, get_pid_command
+from utility import sha256sum, get_pid_command, get_file_type
 import traceback
 
 
@@ -76,12 +76,7 @@ class CloseLogger(object):
                     print("Uploading: {}".format(event["event"]["close"]["target"]["path"]))
                     try:
                         file_sha256 = sha256sum(event["event"]["close"]["target"]["path"])
-                        file_type_command = ["file", "-b", event["event"]["close"]["target"]["path"]]
-                        file_type_exec = subprocess.Popen(
-                            file_type_command,
-                            stdout=subprocess.PIPE
-                        )
-                        file_type = file_type_exec.stdout.read().decode("utf-8").rstrip(" \n")
+                        file_type = get_file_type(event["event"]["close"]["target"]["path"])
                         file_id = self.db.insert_file_with_file_path(event["event"]["close"]["target"]["path"])
                         file_dict = {
                             "file_sha256": file_sha256,
@@ -118,6 +113,7 @@ class CloseLogger(object):
                 if len(line) > 0:
                     self.insert_event(line)
         except KeyboardInterrupt:
+            eslogger_exec.kill()
             self.db.client.close()
             print("Stopping 'close' event stream.")
             sys.exit()
