@@ -82,6 +82,7 @@ class ExecLogger(object):
                 if len(line) > 0:
                     self.insert_event(line)
         except KeyboardInterrupt:
+            eslogger_exec.terminate()
             self.db.client.close()
             print("Stopping 'exec' event stream.")
             sys.exit()
