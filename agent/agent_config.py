@@ -23,6 +23,9 @@ MACHINE_TYPE = "physical"
 
 P7ZIP = "/opt/homebrew/bin/7z"
 ESLOGGER = "/usr/bin/eslogger"
+TCPDUMP = "/usr/sbin/tcpdump"
+
+ESFRIEND_SERVER = "192.168.1.62"
 
 # to configure connection string with password use
 # mongodb://username:password@server:port
