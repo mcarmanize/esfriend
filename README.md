@@ -114,14 +114,7 @@ Modify the shebangs in each file so they point to your python3.9 system installa
 Ensure execution flags are set for scripts that are called through subprocess or cron.
 
 
-### Configure cron for Full Disk Access:
-Use Security & Privacy menu to add `/usr/sbin/cron` to Full Disk Access
 
-Configure crontab to run the agent.py script on reboot
-
-`crontab -e`
-
-`@reboot cd /path/to/agent/ && /usr/bin/sudo ./agent.py`
 
 ### Configure sudoers file to allow reboot, eslogger, and the agent python without password:
 `sudo nano /etc/sudoers`
@@ -144,6 +137,21 @@ Switch the system to a frozen state
 
 **Important Note: Invalid key from payment processor. After purchasing the software you may need to contact support immediately because the license provided from the payment processer is not valid. Contacting support through the payment processor has been successful for me in the past.**
 
+
+### Install the esfriend agent launch daemon:
+Configure the included example launch daemon plist to point to all appropriate paths, also rename it to what every you would like.
+
+Copy the file to the LaunchDaemons directory.
+
+`sudo cp com.mcarmanize.esfriend_agent.plist /Library/LaunchDaemons`
+
+Load the daemon.
+
+`sudo launchctl load -w /Library/LaunchDaemons/com.mcarmanize.esfriend_agent.plist`
+
+To unload the daemon.
+
+`sudo launchctl unload /Library/LaunchDaemons/com.mcarmanize.esfriend_agent.plist`
 
 ## Using esfriend
 After the agent is configured and running you can start the Analysis machine process
