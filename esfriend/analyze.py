@@ -58,23 +58,26 @@ class Analyze:
 
     def analyze_run(self):
         try:
-            mitm_command = [
-                MITMDUMP,
-                "-s",
-                "save_headers.py",
-                "-r",
-                self.pcap_path,
-                "-p",
-                "8091",
-            ]
-            mitm_execute = subprocess.Popen(mitm_command, stdout=subprocess.DEVNULL)
-            mitm_execute.wait()
-            request_headers = open("request_headers.txt", "r").read()
-            request_headers = request_headers.replace("\n", "<br>")
-            self.report["request_headers"] = request_headers
-            # delete the headers file and mitmdump file from disk
-            os.remove("request_headers.txt")
-            os.remove(self.pcap_path)
+            if os.path.exists(self.pcap_path):
+                mitm_command = [
+                    MITMDUMP,
+                    "-s",
+                    "save_headers.py",
+                    "-r",
+                    self.pcap_path,
+                    "-p",
+                    "8091",
+                ]
+                mitm_execute = subprocess.Popen(mitm_command, stdout=subprocess.DEVNULL)
+                mitm_execute.wait()
+                request_headers = open("request_headers.txt", "r").read()
+                request_headers = request_headers.replace("\n", "<br>")
+                self.report["request_headers"] = request_headers
+                # delete the headers file and mitmdump file from disk
+                os.remove("request_headers.txt")
+                os.remove(self.pcap_path)
+            else:
+                self.report["request_headers"] = None
         except Exception:
             traceback.print_exc()
         proc_list_obj = RunLogAnalyzer(self.job_id)
