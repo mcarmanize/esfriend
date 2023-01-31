@@ -136,7 +136,7 @@ EXCLUDED_EVENTS = [
     # "iokit_open",
     # "kextload",
     # "kextunload",
-    "link",
+    "link", # filemon event
     "listextattr",
     # "login_login",
     # "login_logout",
@@ -182,7 +182,7 @@ EXCLUDED_EVENTS = [
     "truncate",
     # "uipc_bind",
     # "uipc_connect",
-    "unlink",
+    "unlink", # filemon event
     # "unmount",
     "utimes",
     "write", # filemon event

@@ -24,6 +24,8 @@ MACHINE_TYPE = "physical"
 P7ZIP = "/opt/homebrew/bin/7z"
 ESLOGGER = "/usr/bin/eslogger"
 TCPDUMP = "/usr/sbin/tcpdump"
+# only compatible with customer version of FileMonitor from https://github.com/mcarmanize/FileMonitor
+FILEMON = "/Applications/FileMonitor.app/Contents/MacOS/FileMonitor"
 
 ESFRIEND_SERVER = "192.168.1.62"
 
