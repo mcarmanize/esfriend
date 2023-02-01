@@ -45,6 +45,26 @@ def ping(host):
         == 0
     )
 
+FILEMON_EVENTS = [
+    "close",
+    "create",
+    "link",
+    "open",
+    "rename",
+    "unlink",
+    "write",
+]
+
+def normalize_filemon_event(event):
+    event["process_path"] = event["file"]["process"]["path"]
+    if event["event_type_description"] == "close":
+        if event["modified"] == "0":
+            event["modified"] = False
+        else:
+            event["modified"] = True
+    return event
+
+
 
 """
     add new methods, not related to event strings, above this comment
@@ -53,6 +73,7 @@ def ping(host):
 def get_event_string(event):
     try:
         event_string = "{},{}".format(event["event_type_description"], event["process_path"])
+        """ dictionary of events and the function to use for that event """
         event_dict = {
             "access": access_string,
             "authentication": authentication_string,
@@ -106,6 +127,7 @@ def get_event_string(event):
             "utimes": utimes_string,
             "write": write_string,
         }
+        """ run function value associated with dictionary key """
         event_string = event_dict[event["event_type_description"]](event_string, event)
         return event_string
     except Exception:
@@ -156,17 +178,15 @@ def clone_string(event_string, event):
     return event_string
 
 def close_string(event_string, event):
-    event_string += ",{},{},{}".format(
-        event["event"]["close"]["target"]["path"],
-        event["event"]["close"]["modified"],
-        event["event"]["close"]["was_mapped_writable"]
+    event_string += ",{},{}".format(
+        event["file"]["destination"],
+        event["modified"],
     )
     return event_string
 
 def create_string(event_string, event):
-    event_string += ",{},{}".format(
-        event["event"]["create"]["destination"]["existing_file"]["path"],
-        event["event"]["create"]["acl"]
+    event_string += ",{}".format(
+        event["file"]["destination"]
     )
     return event_string
 
@@ -294,10 +314,7 @@ def mprotect_string(event_string, event):
     return event_string
 
 def open_string(event_string, event):
-    event_string += ",{},{}".format(
-        event["event"]["open"]["file"]["path"],
-        event["event"]['open']["fflag"]
-    )
+    event_string += ",{}".format(event["file"]["destination"])
     return event_string
 
 def proc_check_string(event_string, event):
@@ -327,19 +344,10 @@ def readlink_string(event_string, event):
     return event_string
 
 def rename_string(event_string, event):
-    if "new_path" in event["event"]["rename"]:
-        event_string += ",{},{},{},{}".format(
-            event["event"]["rename"]["source"]["path"],
-            event["event"]["rename"]["new_path"]["dir"],
-            event["event"]["rename"]["new_path"]["filename"],
-            event["event"]["rename"]["destination_type"]
-        )
-    elif "existing_file" in event["event"]["rename"]:
-        event_string += ",{},{},{},{}".format(
-            event["event"]["rename"]["source"]["path"],
-            event["event"]["rename"]["existing_file"]["path"],
-            event["event"]["rename"]["destination_type"]
-        )
+    event_string += ",{},{}".format(
+        event["file"]["source"],
+        event["file"]["destination"],
+    )
     return event_string
 
 def searchfs_string(event_string, event):
@@ -435,10 +443,7 @@ def uipc_connect_string(event_string, event):
     return event_string
 
 def unlink_string(event_string, event):
-    event_string += ",{},{}".format(
-        event["event"]["unlink"]["target"]["path"],
-        event["event"]["unlink"]["parent_dir"]["path"]
-    )
+    event_string += ",{}".format(event["file"]["destination"])
     return event_string
 
 def unmount_string(event_string, event):
@@ -453,5 +458,5 @@ def utimes_string(event_string, event):
     return event_string
 
 def write_string(event_string, event):
-    event_string += ",{}".format(event["event"]["write"]["target"]["path"])
+    event_string += ",{}".format(event["file"]["destination"])
     return event_string

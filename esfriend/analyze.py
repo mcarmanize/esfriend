@@ -29,7 +29,7 @@ from database import DatabaseConnection
 from bson.objectid import ObjectId
 from config import MITMDUMP
 from process_list import RunLogAnalyzer
-from utility import get_event_string
+from utility import get_event_string, normalize_filemon_event, FILEMON_EVENTS
 import traceback
 
 
@@ -84,7 +84,7 @@ class Analyze:
         proc_tree = proc_list_obj.process_tree
         self.report["proc_list"] = proc_tree
         self.apply_goodlist()
-        print(f"Analysis finished for job id: {self.job_id}")
+        print(f"Analysis finished for job id: {self.job_id}")  
 
     def apply_goodlist(self):
         es_collection = self.job_id+"eslog"
@@ -93,6 +93,27 @@ class Analyze:
         self.db.run_logs[ls_collection].create_index("goodlist")
         es_cursor = self.db.run_logs[es_collection].find()
         for event in es_cursor:
+            if event["event_type_description"] in FILEMON_EVENTS:
+                event = normalize_filemon_event(event)
+                if event["event_type_description"] == "close":
+                    self.db.run_logs[es_collection].update_one(
+                        {"_id": event["_id"]}, 
+                        {
+                            "$set": {
+                                "modified": event["modified"], 
+                                "process_path": event["process_path"]
+                            }
+                        }
+                    )
+                else:
+                    self.db.run_logs[es_collection].update_one(
+                        {"_id": event["_id"]}, 
+                        {
+                            "$set": {
+                                "process_path": event["process_path"]
+                            }
+                        }
+                    )
             event_string = get_event_string(event)
             event_md5 = hashlib.md5(event_string.encode("utf-8")).hexdigest()
             good_event = self.db.esfriend["esgoodlist"].find_one({"event_md5": event_md5})
