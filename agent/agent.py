@@ -229,11 +229,13 @@ class EsfriendAgent:
             now = int(time.time())
             if (now - self.start_time) > self.timeout:
                 # kill all monitor processes - first kill filemon to stop any file uploads
+                self.tcpdump_process.send_signal(signal.SIGINT)
                 self.filemon_process.send_signal(signal.SIGINT)
                 self.eslogger_process.send_signal(signal.SIGINT)
                 self.logstream_process.send_signal(signal.SIGINT)
                 self.eslogger_exec_process.send_signal(signal.SIGINT)
-                self.tcpdump_process.send_signal(signal.SIGINT)
+                # giving time for tcpdump.py to upload file
+                self.tcpdump_process.wait()
                 # connect to database, remove assigned job, upload output files
                 db = DatabaseConnection(MONGO_CONNECTION_STRING)
                 unassign_job = db.esfriend_machines.update_one(
@@ -255,7 +257,7 @@ class EsfriendAgent:
                     {"_id": self.job_id}, {"$set": {"job_progress": 4}}
                 )
                 db.client.close()
-                time.sleep(5)
+                
                 subprocess.Popen(["sudo", "/sbin/reboot"])
 
     def get_username(self):
