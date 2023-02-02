@@ -22,6 +22,7 @@
 import sys
 import os
 import subprocess
+import time
 from database import DatabaseConnection
 from bson.objectid import ObjectId
 from agent_config import MONGO_CONNECTION_STRING, TCPDUMP, ESFRIEND_SERVER
@@ -44,6 +45,9 @@ class TcpdumpWrapper(object):
         try:
             tcpdump_command = ["/usr/bin/sudo", TCPDUMP, "-w", "tcpdump.out", "src not {0} and dst not {0}".format(ESFRIEND_SERVER)]
             tcpdump_exec = subprocess.Popen(tcpdump_command, stdout=subprocess.PIPE)
+            while True:
+                # wait for keyboard interrupt
+                time.sleep(5)
         except KeyboardInterrupt:
             tcpdump_exec.terminate()
             self.db = DatabaseConnection(MONGO_CONNECTION_STRING, self.job_id)
