@@ -71,7 +71,8 @@ class TcpdumpWrapper(object):
             self.db.esfriend_jobs.update_one({"_id": ObjectId(self.job_id)}, {"$set": {"tcpdump_file": file_id}})
             self.db.client.close()
             print("Stopping tcpdump.")
-            sys.exi
+            sys.exit()
+
 if __name__ == "__main__":
     job_id = sys.argv[1]
     TcpdumpWrapper(job_id)
