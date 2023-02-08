@@ -27,7 +27,8 @@ TCPDUMP = "/usr/sbin/tcpdump"
 # only compatible with customer version of FileMonitor from https://github.com/mcarmanize/FileMonitor
 FILEMON = "/Applications/FileMonitor.app/Contents/MacOS/FileMonitor"
 
-ESFRIEND_SERVER = "192.168.1.62"
+ESFRIEND_SERVER_IP = "192.168.1.62"
+ESFRIEND_SERVER_PORT = "27017"
 
 # to configure connection string with password use
 # mongodb://username:password@server:port
