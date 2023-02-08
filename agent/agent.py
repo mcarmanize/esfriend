@@ -247,12 +247,14 @@ class EsfriendAgent:
                         {"_id": self.job_id},
                         {"$set": {"output_file_id": output_upload}},
                     )
+                    os.remove("output.txt")
                 if os.path.exists("agent_output.txt"):
                     output_upload = db.insert_file_with_file_path("agent_output.txt")
                     add_output_id = db.esfriend_jobs.update_one(
                         {"_id": self.job_id},
                         {"$set": {"agent_output_file_id": output_upload}},
                     )
+                    os.remove("agent_output.txt")
                 set_analysis_flag = db.esfriend_jobs.update_one(
                     {"_id": self.job_id}, {"$set": {"job_progress": 4}}
                 )
