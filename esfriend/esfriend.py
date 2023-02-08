@@ -114,9 +114,9 @@ class Esfriend:
             mitm_job_id = mitm_job["_id"]
             mitm_machine = mitm_job["assigned_machine"]
             mitm_timeout = mitm_job["timeout"]
-            mitm_port = self.machine.machines[mitm_machine]["mitm_port"]
-            command = ["./mitm.py", str(mitm_job_id), str(mitm_port), str(mitm_timeout)]
-            mitm_execute = subprocess.Popen(command)
+            # mitm_port = self.machine.machines[mitm_machine]["mitm_port"]
+            # command = ["./mitm.py", str(mitm_job_id), str(mitm_port), str(mitm_timeout)]
+            # mitm_execute = subprocess.Popen(command)
             self.db.esfriend_jobs.update_one(
                 {"_id": mitm_job_id}, {"$set": {"job_progress": 3}}
             )
