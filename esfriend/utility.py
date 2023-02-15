@@ -22,6 +22,7 @@ import hashlib
 import subprocess
 import platform
 import traceback
+from string import printable
 
 
 def sha256sum(file_path):
@@ -65,6 +66,41 @@ def normalize_filemon_event(event):
     return event
 
 
+# copied from https://github.com/cuckoosandbox/cuckoo/blob/master/cuckoo/common/utils.py
+def versiontuple(v):
+    """Return the version as a tuple for easy comparison."""
+    return tuple(int(x) for x in v.split("."))
+
+# copied from https://github.com/cuckoosandbox/cuckoo/blob/master/cuckoo/common/utils.py
+def convert_char(c):
+    """Escapes characters.
+    @param c: dirty char.
+    @return: sanitized char.
+    """
+    if c in printable:
+        return c
+    else:
+        return "\\x%02x" % ord(c)
+
+# copied from https://github.com/cuckoosandbox/cuckoo/blob/master/cuckoo/common/utils.py
+def is_printable(s):
+    """ Test if a string is printable."""
+    for c in s:
+        if c not in printable:
+            return False
+    return True
+
+# copied from https://github.com/cuckoosandbox/cuckoo/blob/master/cuckoo/common/utils.py
+def convert_to_printable(s):
+    """Convert char to printable.
+    @param s: string.
+    @return: sanitized string.
+    """
+    if is_printable(s):
+        return s
+    return "".join(convert_char(c) for c in s)
+
+
 
 """
     add new methods, not related to event strings, above this comment
@@ -96,6 +132,7 @@ def get_event_string(event):
             "getextattr": getextattr_string,
             "iokit_open": iokit_open_string,
             "kextload": kextload_string,
+            "link": link_string,
             "listextattr": listextattr_string,
             "lookup": lookup_string,
             "mmap": mmap_string,
@@ -279,6 +316,13 @@ def iokit_open_string(event_string, event):
 def kextload_string(event_string, event):
     event_string += ",{},{}".format(
         event["event"]["kextload"]["identifier"]
+    )
+    return event_string
+
+def link_string(event_string, event):
+    event_string += ",{},{}".format(
+        event["file"]["source"],
+        event["file"]["destination"]
     )
     return event_string
 
